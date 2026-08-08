@@ -7,3 +7,11 @@ export async function healthCheck() {
   }
   return response.json();
 }
+
+export async function getPublications() {
+  const response = await fetch(`${API_URL}/publications`);
+  if (!response.ok) {
+    throw new Error("No se pudieron obtener las publicaciones");
+  }
+  return response.json();
+}
