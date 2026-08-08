@@ -50,6 +50,14 @@ export default function CatalogPage() {
           {publications.map((publication) => {
             const coverImage = publication.publication_images?.find((image) => image.is_cover)
               || publication.publication_images?.[0];
+            const priceLabel = publication.is_price_visible && publication.price != null
+              ? new Intl.NumberFormat("es-AR", {
+                style: "currency",
+                currency: "ARS",
+                maximumFractionDigits: 0
+              }).format(publication.price)
+              : "Consultar precio";
+            const availabilityClass = `status-badge status-${publication.availability_status}`;
 
             return (
               <article key={publication.id} className="card publication-card">
@@ -72,12 +80,8 @@ export default function CatalogPage() {
                   </div>
                   <p>{publication.description}</p>
                   <div className="publication-meta">
-                    <strong>
-                      {publication.is_price_visible && publication.price != null
-                        ? `$ ${publication.price}`
-                        : "Consultar precio"}
-                    </strong>
-                    <span>{publication.availability_status}</span>
+                    <strong>{priceLabel}</strong>
+                    <span className={availabilityClass}>{publication.availability_status}</span>
                   </div>
                 </div>
               </article>

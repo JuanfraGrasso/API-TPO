@@ -7,15 +7,21 @@ import AdminDashboardPage from "../pages/AdminDashboardPage";
 
 function Layout({ children }) {
   return (
-    <div>
+    <div className="app-shell">
       <header className="topbar">
-        <h1>HardPoint Computacion</h1>
-        <nav>
+        <div className="topbar-inner">
+          <div className="brand-block">
+            <span className="brand-kicker">Hardware Premium Store</span>
+            <h1>HardPoint Computacion</h1>
+          </div>
+
+          <nav className="main-nav">
           <Link to="/">Inicio</Link>
           <Link to="/catalogo">Catalogo</Link>
           <Link to="/contacto">Contacto</Link>
           <Link to="/admin/login">Admin</Link>
-        </nav>
+          </nav>
+        </div>
       </header>
       <main className="container">{children}</main>
     </div>
