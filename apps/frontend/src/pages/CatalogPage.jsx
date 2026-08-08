@@ -39,7 +39,7 @@ export default function CatalogPage() {
     <section className="catalog-page">
       <div className="card catalog-hero">
         <h2>Catalogo</h2>
-        <p>Explora las publicaciones cargadas en Supabase desde la API real.</p>
+        <p>Explora hardware, perifericos y componentes disponibles en nuestra tienda.</p>
       </div>
 
       {isLoading ? <p>Cargando publicaciones...</p> : null}
@@ -66,6 +66,10 @@ export default function CatalogPage() {
                     {publication.categories?.name || "Sin categoria"}
                   </span>
                   <h3>{publication.name}</h3>
+                  <div className="publication-tags">
+                    {publication.brand ? <span>Marca: {publication.brand}</span> : null}
+                    {publication.sku ? <span>SKU: {publication.sku}</span> : null}
+                  </div>
                   <p>{publication.description}</p>
                   <div className="publication-meta">
                     <strong>

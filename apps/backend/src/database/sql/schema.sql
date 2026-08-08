@@ -1,6 +1,17 @@
 -- Esquema SQL para Supabase (PostgreSQL)
+-- Dominio: comercio de computacion y hardware.
 -- Incluye: administradores, informacion del comercio, categorias,
 -- publicaciones, imagenes de publicaciones y consultas de contacto.
+--
+-- RESET OPCIONAL
+-- Ejecutar solo si necesitas eliminar por completo las tablas actuales.
+-- drop table if exists publication_images cascade;
+-- drop table if exists publications cascade;
+-- drop table if exists inquiries cascade;
+-- drop table if exists categories cascade;
+-- drop table if exists commerce_profile cascade;
+-- drop table if exists admin_users cascade;
+-- drop function if exists set_updated_at();
 
 create extension if not exists pgcrypto;
 
@@ -51,6 +62,8 @@ create table if not exists categories (
 create table if not exists publications (
 	id bigserial primary key,
 	name varchar(140) not null,
+	sku varchar(60) unique,
+	brand varchar(80),
 	category_id bigint not null references categories(id) on delete restrict,
 	description text not null,
 	price numeric(12, 2),
@@ -62,6 +75,10 @@ create table if not exists publications (
 	updated_at timestamptz not null default now(),
 	unique (name, category_id)
 );
+
+alter table publications add column if not exists sku varchar(60);
+alter table publications add column if not exists brand varchar(80);
+create unique index if not exists idx_publications_sku on publications(sku) where sku is not null;
 
 create table if not exists publication_images (
 	id bigserial primary key,

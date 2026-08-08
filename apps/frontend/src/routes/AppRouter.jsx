@@ -9,7 +9,7 @@ function Layout({ children }) {
   return (
     <div>
       <header className="topbar">
-        <h1>TPO Comercios</h1>
+        <h1>HardPoint Computacion</h1>
         <nav>
           <Link to="/">Inicio</Link>
           <Link to="/catalogo">Catalogo</Link>
