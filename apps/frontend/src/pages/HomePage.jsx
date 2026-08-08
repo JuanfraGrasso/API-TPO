@@ -6,13 +6,15 @@ export default function HomePage() {
       <article className="hero-banner card">
         <img
           className="hero-banner-image"
-          src="https://images.unsplash.com/photo-1591799265444-d66432b91588?auto=format&fit=crop&w=1800&q=80"
+          src="/background.jpg"
           alt="Notebook gamer sobre escritorio oscuro"
         />
         <div className="hero-banner-overlay" />
         <div className="hero-banner-content">
-          <span className="eyebrow">Hardware, perifericos y armado de PCs</span>
-          <h2>Equipos listos para rendir de verdad</h2>
+          <h2>
+            Equipos listos
+            <span className="hero-title-accent"> para rendir de verdad</span>
+          </h2>
           <p>
             HardPoint combina componentes premium, asesoramiento tecnico y stock
             actualizado para que armes o mejores tu equipo sin complicaciones.
@@ -22,12 +24,43 @@ export default function HomePage() {
             <Link className="btn btn-primary" to="/catalogo">
               Ver catalogo
             </Link>
-            <Link className="btn btn-ghost" to="/contacto">
+            <Link className="btn btn-hero-secondary" to="/contacto">
               Pedir asesoria
             </Link>
           </div>
         </div>
       </article>
+
+      <section className="sliding-strip" aria-label="Novedades HardPoint">
+        <div className="sliding-strip-track">
+          <p className="sliding-strip-text">
+            HARDPOINT <span className="sliding-strip-accent">NEXT GEN</span> 2026
+            <span className="sliding-strip-chip">
+              [ CPU <img className="sliding-strip-icon" src="/cpu-logo.jpg" alt="CPU" /> ]
+            </span>
+            <span className="sliding-strip-chip">
+              [ RAM <img className="sliding-strip-icon" src="/ram-logo.jpg" alt="RAM" /> ]
+            </span>
+            <span className="sliding-strip-chip">
+              [ GPU <img className="sliding-strip-icon" src="/gpu-logo.jpg" alt="GPU" /> ]
+            </span>
+            <span className="sliding-strip-accent"> TODO PARA TU BUILD</span>
+          </p>
+          <p className="sliding-strip-text" aria-hidden="true">
+            HARDPOINT <span className="sliding-strip-accent">NEXT GEN</span> 2026
+            <span className="sliding-strip-chip">
+              [ CPU <img className="sliding-strip-icon" src="/cpu-logo.jpg" alt="" aria-hidden="true" /> ]
+            </span>
+            <span className="sliding-strip-chip">
+              [ RAM <img className="sliding-strip-icon" src="/ram-logo.jpg" alt="" aria-hidden="true" /> ]
+            </span>
+            <span className="sliding-strip-chip">
+              [ GPU <img className="sliding-strip-icon" src="/gpu-logo.jpg" alt="" aria-hidden="true" /> ]
+            </span>
+            <span className="sliding-strip-accent"> TODO PARA TU BUILD</span>
+          </p>
+        </div>
+      </section>
 
       <section className="home-cards-stack">
         <article className="card showcase-card">
