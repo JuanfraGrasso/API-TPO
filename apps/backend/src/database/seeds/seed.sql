@@ -1,0 +1,2 @@
+-- Seed inicial.
+-- Aqui ira la carga de al menos 20 publicaciones para cumplir el enunciado.

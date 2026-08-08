@@ -1,0 +1,2 @@
+-- Esquema base inicial para el TPO.
+-- Luego se completara con tablas de categorias, publicaciones, usuarios y consultas.
