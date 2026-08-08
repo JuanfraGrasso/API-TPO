@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import CatalogPage from "../pages/CatalogPage";
@@ -6,6 +7,17 @@ import LoginPage from "../pages/LoginPage";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
 
 function Layout({ children }) {
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((current) => (current === "light" ? "dark" : "light"));
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -16,11 +28,15 @@ function Layout({ children }) {
           </div>
 
           <nav className="main-nav">
-          <Link to="/">Inicio</Link>
-          <Link to="/catalogo">Catalogo</Link>
-          <Link to="/contacto">Contacto</Link>
-          <Link to="/admin/login">Admin</Link>
+            <Link to="/">Inicio</Link>
+            <Link to="/catalogo">Catalogo</Link>
+            <Link to="/contacto">Contacto</Link>
+            <Link to="/admin/login">Admin</Link>
           </nav>
+
+          <button type="button" className="theme-toggle" onClick={toggleTheme}>
+            {theme === "light" ? "Modo oscuro" : "Modo claro"}
+          </button>
         </div>
       </header>
       <main className="container">{children}</main>
