@@ -54,11 +54,10 @@ function Layout({ children }) {
               <Link to="/">Inicio</Link>
               <Link to="/catalogo">Catalogo</Link>
               <Link to="/contacto">Contacto</Link>
-              <Link to="/admin/login">Admin</Link>
             </nav>
           </div>
 
-          <button type="button" className="login-icon-btn" aria-label="Login (proximamente)">
+          <Link className="login-icon-btn" to="/admin/login" aria-label="Ingresar al panel admin">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path
                 d="M20 21a8 8 0 0 0-16 0"
@@ -76,10 +75,16 @@ function Layout({ children }) {
                 strokeWidth="1.8"
               />
             </svg>
-          </button>
+          </Link>
         </div>
       </header>
       <main className="container">{children}</main>
+      <footer className="site-footer">
+        <div className="site-footer-inner">
+          <p>HardPoint Store © 2026</p>
+          <p>Hardware, perifericos y componentes para tu proxima build.</p>
+        </div>
+      </footer>
     </div>
   );
 }

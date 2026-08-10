@@ -120,45 +120,6 @@ export default function HomePage() {
           </div>
         </article>
       </section>
-
-      <section className="card info-banner">
-        <div>
-          <span className="card-label">Next Gen Event</span>
-          <h3>Todo nuestro catalogo apunta a upgrade modular</h3>
-        </div>
-        <p>
-          Elegis una base solida hoy y mejoras por partes cuando lo necesites,
-          sin tirar tu inversion inicial.
-        </p>
-      </section>
-
-      <div className="stats-grid">
-        <article className="card stat-card">
-          <span>+20</span>
-          <p>Productos publicados para buscar y comparar</p>
-        </article>
-        <article className="card stat-card">
-          <span>6</span>
-          <p>Categorias para navegar rapido por tipo de componente</p>
-        </article>
-        <article className="card stat-card">
-          <span>100%</span>
-          <p>Integrado con datos reales desde Supabase</p>
-        </article>
-      </div>
-
-      <section className="card cta-band">
-        <div>
-          <h3>Necesitas ayuda para elegir componentes compatibles?</h3>
-          <p>
-            Te ayudamos a definir una configuracion equilibrada segun presupuesto,
-            uso y posibilidades futuras de upgrade.
-          </p>
-        </div>
-        <Link className="btn btn-primary" to="/contacto">
-          Hablar con un asesor
-        </Link>
-      </section>
     </section>
   );
 }

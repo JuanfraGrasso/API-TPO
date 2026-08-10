@@ -25,6 +25,12 @@ body {
   overflow-x: hidden;
 }
 
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -103,8 +109,10 @@ body {
   border: 1px solid var(--border-subtle);
   background: #ffffff;
   color: #1f2430;
-  cursor: default;
+  cursor: pointer;
   padding: 0;
+  text-decoration: none;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .login-icon-btn svg {
@@ -112,10 +120,37 @@ body {
   height: 18px;
 }
 
+.login-icon-btn:hover {
+  color: var(--accent-strong);
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border-subtle));
+  background: var(--accent-soft);
+}
+
 .container {
   max-width: 1320px;
   margin: 0 auto;
   padding: 1rem 1.5rem 2.4rem;
+  flex: 1;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border-subtle);
+  background: #ffffff;
+}
+
+.site-footer-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.site-footer-inner p {
+  margin: 0;
 }
 
 .eyebrow {
@@ -138,6 +173,119 @@ body {
 .catalog-page {
   display: grid;
   gap: 1rem;
+}
+
+.catalog-page-wide {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 0 0.8rem;
+}
+
+.catalog-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.catalog-sidebar {
+  position: sticky;
+  top: 82px;
+  display: grid;
+  gap: 1rem;
+}
+
+.catalog-title {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.catalog-filter-group h3 {
+  margin-top: 0;
+  margin-bottom: 0.7rem;
+}
+
+.catalog-filters-list {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.filter-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--surface) 94%, transparent);
+  color: var(--text-main);
+  border-radius: 10px;
+  padding: 0.5rem 0.62rem;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filter-row:hover {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border-subtle));
+}
+
+.filter-row.active {
+  background: var(--accent-soft);
+  border-color: color-mix(in oklab, var(--accent) 55%, var(--border-subtle));
+  color: var(--accent-strong);
+}
+
+.price-filter-wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.price-filter-wrap input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.price-filter-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.sort-options {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.sort-option input {
+  accent-color: var(--accent);
+}
+
+.catalog-results {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.catalog-results-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.catalog-results-head h3,
+.catalog-results-head p {
+  margin: 0;
 }
 
 .home-page,
@@ -543,10 +691,6 @@ body {
   margin: 0.35rem 0 0;
 }
 
-.catalog-hero p {
-  margin-bottom: 0;
-}
-
 .catalog-toolbar {
   display: grid;
   gap: 0.9rem;
@@ -749,6 +893,26 @@ body {
 
   .main-nav a {
     font-size: 0.94rem;
+  }
+
+  .site-footer-inner {
+    flex-direction: column;
+    font-size: 0.84rem;
+  }
+
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-page-wide {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+  }
+
+  .catalog-sidebar {
+    position: static;
   }
 
   .form-grid {
