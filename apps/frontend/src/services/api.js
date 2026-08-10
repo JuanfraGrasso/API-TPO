@@ -15,3 +15,21 @@ export async function getPublications() {
   }
   return response.json();
 }
+
+export async function createInquiry(payload) {
+  const response = await fetch(`${API_URL}/inquiries`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "No se pudo enviar la consulta");
+  }
+
+  return result;
+}
