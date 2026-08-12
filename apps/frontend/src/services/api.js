@@ -18,7 +18,7 @@ async function readApiResponse(response, fallbackMessage) {
 
   if (!response.ok && /<!doctype|<html|cannot\s+(post|get)/i.test(rawText)) {
     throw new Error(
-      "La API devolvio HTML en lugar de JSON. Verifica que el backend este desplegado y que /api/inquiries exista en Render."
+      "La API devolvio HTML en lugar de JSON. Verifica que el backend este desplegado correctamente en Render."
     );
   }
 
@@ -37,6 +37,53 @@ export async function healthCheck() {
 export async function getPublications() {
   const response = await fetch(`${API_URL}/publications`);
   return readApiResponse(response, "No se pudieron obtener las publicaciones");
+}
+
+export async function getAdminPublications() {
+  const response = await fetch(`${API_URL}/publications?includeInactive=true`);
+  return readApiResponse(response, "No se pudieron obtener las publicaciones");
+}
+
+export async function getCategories() {
+  const response = await fetch(`${API_URL}/categories`);
+  return readApiResponse(response, "No se pudieron obtener las categorias");
+}
+
+export async function createPublication(payload, token) {
+  const response = await fetch(`${API_URL}/publications`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo crear la publicacion");
+}
+
+export async function updatePublication(id, payload, token) {
+  const response = await fetch(`${API_URL}/publications/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo actualizar la publicacion");
+}
+
+export async function deletePublication(id, token) {
+  const response = await fetch(`${API_URL}/publications/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return readApiResponse(response, "No se pudo eliminar la publicacion");
 }
 
 export async function createInquiry(payload) {
@@ -95,6 +142,20 @@ export async function getAdminInquiries(token) {
 
   return readApiResponse(response, "No se pudieron obtener las consultas");
 }
+
+export async function updateInquiryStatus(id, status, token) {
+  const response = await fetch(`${API_URL}/inquiries/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ status })
+  });
+
+  return readApiResponse(response, "No se pudo actualizar el estado de la consulta");
+}
+
 
 export function getStoredAdminSession() {
   return localStorage.getItem(ADMIN_SESSION_KEY);

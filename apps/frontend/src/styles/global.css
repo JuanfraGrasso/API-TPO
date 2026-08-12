@@ -961,6 +961,259 @@ body {
   margin-top: 0;
 }
 
+/* Admin Tabs & Table Styles */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--border-subtle);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-tab-btn {
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.admin-tab-btn.active {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent-strong);
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.admin-table th {
+  background: color-mix(in oklab, var(--bg-surface) 90%, var(--accent-soft) 10%);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.admin-table tr:hover {
+  background: color-mix(in oklab, var(--bg-surface) 96%, var(--accent) 4%);
+}
+
+.admin-table-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  border-radius: 6px;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: color-mix(in oklab, var(--danger) 85%, #000);
+}
+
+.publication-form-card {
+  margin-bottom: 1.5rem;
+  background: color-mix(in oklab, var(--bg-surface) 98%, var(--accent-soft) 2%);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--border-subtle));
+  padding: 1.5rem;
+  border-radius: 14px;
+}
+
+.form-actions-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+/* Full Width Admin Dashboard & Side Card Layout */
+.admin-page-wide {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 0 1.2rem;
+}
+
+.admin-dashboard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.admin-main-card {
+  width: 100%;
+}
+
+.admin-side-card {
+  position: sticky;
+  top: 82px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.admin-side-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.2rem;
+}
+
+.admin-side-card p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.inquiries-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-inquiry-card {
+  background: color-mix(in oklab, var(--bg-surface) 98%, var(--surface) 2%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-inquiry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-inquiry-info strong {
+  font-size: 1.05rem;
+}
+
+.admin-inquiry-info p {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.admin-inquiry-body {
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 0.65rem;
+}
+
+.admin-inquiry-body p {
+  margin: 0.3rem 0 0;
+  line-height: 1.5;
+}
+
+.inquiry-status-select {
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text-main);
+  transition: border-color 0.2s ease;
+}
+
+.inquiry-status-select:focus {
+  outline: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+@media (max-width: 960px) {
+  .admin-dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-side-card {
+    position: static;
+  }
+}
+
+/* Checkboxes row in forms */
+.form-checkboxes-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+}
+
+
+
+
 @keyframes strip-scroll-left {
   from {
     transform: translateX(0);

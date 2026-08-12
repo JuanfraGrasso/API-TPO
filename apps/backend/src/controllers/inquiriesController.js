@@ -70,3 +70,39 @@ export async function listInquiriesController(req, res, next) {
     next(error);
   }
 }
+
+export async function updateInquiryStatusController(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    const status = req.body.status?.trim() || "";
+
+    if (!id || Number.isNaN(id)) {
+      throw badRequest("ID de consulta invalido.");
+    }
+
+    const validStatuses = ["pendiente", "leida", "respondida"];
+    if (!validStatuses.includes(status)) {
+      throw badRequest("Estado invalido. Debe ser 'pendiente', 'leida' o 'respondida'.");
+    }
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from("inquiries")
+      .update({ status })
+      .eq("id", id)
+      .select("id, full_name, email, phone, subject, message, status, created_at, updated_at")
+      .single();
+
+    if (error) {
+      throw new Error(`Error al actualizar el estado de la consulta: ${error.message}`);
+    }
+
+    res.json({
+      ok: true,
+      message: "Estado de consulta actualizado.",
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+}

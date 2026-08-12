@@ -42,7 +42,7 @@ function Layout({ children }) {
             <Link className="brand-logo-link" to="/" aria-label="HardPoint Store">
               <img
                 className="brand-logo"
-                src="/hardpoint-logo.jpg"
+                src="/hardpoint-logo.png"
                 alt="HardPoint Store"
                 data-attempt="0"
                 onError={handleLogoError}
