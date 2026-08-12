@@ -8,7 +8,11 @@ const env = {
   nodeEnv: process.env.NODE_ENV || "development",
   supabaseUrl: process.env.SUPABASE_URL || "",
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+  adminEmail: process.env.ADMIN_EMAIL || "",
+  adminPassword: process.env.ADMIN_PASSWORD || "",
+  adminRegistrationSecret: process.env.ADMIN_REGISTRATION_SECRET || "",
+  adminSessionSecret: process.env.ADMIN_SESSION_SECRET || ""
 };
 
 export { env };

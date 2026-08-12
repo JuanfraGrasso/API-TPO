@@ -48,3 +48,25 @@ export async function createInquiryController(req, res, next) {
     next(error);
   }
 }
+
+export async function listInquiriesController(req, res, next) {
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from("inquiries")
+      .select("id, full_name, email, phone, subject, message, status, created_at, updated_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Supabase query error: ${error.message}`);
+    }
+
+    res.json({
+      ok: true,
+      count: data.length,
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+}
