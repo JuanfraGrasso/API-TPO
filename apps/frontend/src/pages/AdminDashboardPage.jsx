@@ -4,6 +4,7 @@ import {
   clearAdminSession,
   getAdminInquiries,
   getAdminSession,
+  registerAdmin,
   getStoredAdminProfile,
   getStoredAdminSession
 } from "../services/api";
@@ -14,6 +15,16 @@ export default function AdminDashboardPage() {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createFeedback, setCreateFeedback] = useState("");
+  const [createFeedbackType, setCreateFeedbackType] = useState("info");
+  const [newAdmin, setNewAdmin] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: ""
+  });
 
   useEffect(() => {
     const token = getStoredAdminSession();
@@ -68,6 +79,37 @@ export default function AdminDashboardPage() {
     navigate("/admin/login", { replace: true });
   }
 
+  async function handleCreateAdmin(event) {
+    event.preventDefault();
+
+    const token = getStoredAdminSession();
+
+    if (!token || createLoading) {
+      return;
+    }
+
+    setCreateLoading(true);
+    setCreateFeedback("");
+
+    try {
+      await registerAdmin(newAdmin, token);
+      setCreateFeedbackType("success");
+      setCreateFeedback("Administrador creado correctamente.");
+      setNewAdmin({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: ""
+      });
+    } catch (requestError) {
+      setCreateFeedbackType("error");
+      setCreateFeedback(requestError.message || "No se pudo crear el administrador.");
+    } finally {
+      setCreateLoading(false);
+    }
+  }
+
   return (
     <section className="card auth-card admin-dashboard">
       <div className="admin-dashboard-header">
@@ -95,6 +137,78 @@ export default function AdminDashboardPage() {
           </article>
 
           <article className="card admin-list-card">
+            <h3>Crear administrador</h3>
+            <form className="contact-form auth-form" onSubmit={handleCreateAdmin}>
+              <div className="form-grid">
+                <label className="form-field">
+                  <span>Nombre</span>
+                  <input
+                    type="text"
+                    value={newAdmin.firstName}
+                    onChange={(event) =>
+                      setNewAdmin((current) => ({ ...current, firstName: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="form-field">
+                  <span>Apellido</span>
+                  <input
+                    type="text"
+                    value={newAdmin.lastName}
+                    onChange={(event) =>
+                      setNewAdmin((current) => ({ ...current, lastName: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="form-field form-field-full">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={newAdmin.email}
+                    onChange={(event) =>
+                      setNewAdmin((current) => ({ ...current, email: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="form-field form-field-full">
+                  <span>Telefono</span>
+                  <input
+                    type="tel"
+                    value={newAdmin.phone}
+                    onChange={(event) =>
+                      setNewAdmin((current) => ({ ...current, phone: event.target.value }))
+                    }
+                  />
+                </label>
+
+                <label className="form-field form-field-full">
+                  <span>Contraseña temporal</span>
+                  <input
+                    type="password"
+                    value={newAdmin.password}
+                    onChange={(event) =>
+                      setNewAdmin((current) => ({ ...current, password: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
+              </div>
+
+              {createFeedback ? (
+                <p className={`form-feedback form-feedback-${createFeedbackType}`}>{createFeedback}</p>
+              ) : null}
+
+              <button className="btn btn-primary" type="submit" disabled={createLoading}>
+                {createLoading ? "Creando..." : "Crear administrador"}
+              </button>
+            </form>
+
             <h3>Ultimas consultas</h3>
             {inquiries.length === 0 ? <p>No hay consultas registradas.</p> : null}
 

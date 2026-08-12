@@ -5,7 +5,7 @@ import { requireAdminAuth } from "../utils/adminAuth.js";
 const authRouter = Router();
 
 authRouter.post("/auth/login", loginController);
-authRouter.post("/auth/register", registerController);
+authRouter.post("/auth/register", requireAdminAuth, registerController);
 authRouter.get("/auth/me", requireAdminAuth, meController);
 
 export { authRouter };

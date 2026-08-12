@@ -63,11 +63,12 @@ export async function loginAdmin(payload) {
   return readApiResponse(response, "No se pudo iniciar sesion");
 }
 
-export async function registerAdmin(payload) {
+export async function registerAdmin(payload, token) {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(payload)
   });

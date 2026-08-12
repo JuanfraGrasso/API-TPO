@@ -90,20 +90,14 @@ export async function registerController(req, res, next) {
     const email = req.body.email?.trim() || "";
     const phone = req.body.phone?.trim() || null;
     const password = req.body.password?.trim() || "";
-    const inviteCode = req.body.inviteCode?.trim() || "";
 
-    if (!firstName || !lastName || !email || !password || !inviteCode) {
-      res.status(400).json({ message: "Completa nombre, apellido, email, contraseña y código de invitación." });
+    if (!firstName || !lastName || !email || !password) {
+      res.status(400).json({ message: "Completa nombre, apellido, email y contraseña." });
       return;
     }
 
-    if (!env.adminRegistrationSecret) {
-      res.status(500).json({ message: "La registracion de administradores no esta configurada." });
-      return;
-    }
-
-    if (inviteCode !== env.adminRegistrationSecret) {
-      res.status(401).json({ message: "Codigo de invitacion invalido." });
+    if (!req.admin) {
+      res.status(401).json({ message: "Solo un administrador autenticado puede crear otro administrador." });
       return;
     }
 
