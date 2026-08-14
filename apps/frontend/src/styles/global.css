@@ -300,6 +300,8 @@ body {
   top: 82px;
   display: grid;
   gap: 1rem;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 }
 
 .catalog-title {
@@ -677,8 +679,9 @@ body {
 .home-grid,
 .contact-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  align-items: start;
 }
 
 .contact-form {
@@ -769,7 +772,7 @@ body {
   margin-bottom: 0;
 }
 
-.feature-list li + li {
+.feature-list li+li {
   margin-top: 0.35rem;
 }
 
@@ -858,7 +861,7 @@ body {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
 }
 
@@ -876,13 +879,13 @@ body {
 
 .publication-image {
   width: 100%;
-  height: 180px;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
 .publication-body {
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
 .publication-body h3 {

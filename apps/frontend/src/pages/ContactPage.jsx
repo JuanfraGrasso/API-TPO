@@ -87,15 +87,28 @@ export default function ContactPage() {
 
   return (
     <section className="contact-page">
-      <div className="card">
-        <h2>Contacto</h2>
-        <p>
-          Escribinos para consultar stock, pedir una cotizacion o recibir ayuda
-          para armar tu PC ideal.
-        </p>
-      </div>
 
       <div className="contact-grid">
+
+        <article className="card">
+          <h3>Nuestra Ubicación</h3>
+          <p style={{ marginBottom: "1rem", color: "var(--text-muted, #666)" }}>
+            Galerías Pacífico, CABA
+          </p>
+          <div className="map-container">
+            <iframe
+              title="Ubicación Galerías Pacífico"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.015708892187!2d-58.37731762343888!3d-34.59934185750244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bccacc2b10a30b%3A0x6e7888b1f5e884ea!2sGaler%C3%ADas%20Pac%C3%ADfico!5e0!3m2!1ses-419!2sar!4v1710000000000!5m2!1ses-419!2sar"
+              width="100%"
+              height="320"
+              style={{ border: 0, borderRadius: "12px" }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </article>
+
         <article className="card">
           <h3>Canales de contacto</h3>
           <ul className="feature-list">

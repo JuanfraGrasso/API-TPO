@@ -6,7 +6,7 @@ export default function HomePage() {
       <article className="hero-banner card">
         <img
           className="hero-banner-image"
-          src="/background.jpg"
+          src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/background.jpg"
           alt="Notebook gamer sobre escritorio oscuro"
         />
         <div className="hero-banner-overlay" />
@@ -36,26 +36,26 @@ export default function HomePage() {
           <p className="sliding-strip-text">
             HARDPOINT <span className="sliding-strip-accent">NEXT GEN</span> 2026
             <span className="sliding-strip-chip">
-              [ CPU <img className="sliding-strip-icon" src="/cpu-logo.jpg" alt="CPU" /> ]
+              [ CPU <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/cpu-logo.jpg" alt="CPU" /> ]
             </span>
             <span className="sliding-strip-chip">
-              [ RAM <img className="sliding-strip-icon" src="/ram-logo.jpg" alt="RAM" /> ]
+              [ RAM <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/ram-logo.jpg" alt="RAM" /> ]
             </span>
             <span className="sliding-strip-chip">
-              [ GPU <img className="sliding-strip-icon" src="/gpu-logo.jpg" alt="GPU" /> ]
+              [ GPU <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/gpu-logo.jpg" alt="GPU" /> ]
             </span>
             <span className="sliding-strip-accent"> TODO PARA TU BUILD</span>
           </p>
           <p className="sliding-strip-text" aria-hidden="true">
             HARDPOINT <span className="sliding-strip-accent">NEXT GEN</span> 2026
             <span className="sliding-strip-chip">
-              [ CPU <img className="sliding-strip-icon" src="/cpu-logo.jpg" alt="" aria-hidden="true" /> ]
+              [ CPU <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/cpu-logo.jpg" alt="" aria-hidden="true" /> ]
             </span>
             <span className="sliding-strip-chip">
-              [ RAM <img className="sliding-strip-icon" src="/ram-logo.jpg" alt="" aria-hidden="true" /> ]
+              [ RAM <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/ram-logo.jpg" alt="" aria-hidden="true" /> ]
             </span>
             <span className="sliding-strip-chip">
-              [ GPU <img className="sliding-strip-icon" src="/gpu-logo.jpg" alt="" aria-hidden="true" /> ]
+              [ GPU <img className="sliding-strip-icon" src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/gpu-logo.jpg" alt="" aria-hidden="true" /> ]
             </span>
             <span className="sliding-strip-accent"> TODO PARA TU BUILD</span>
           </p>

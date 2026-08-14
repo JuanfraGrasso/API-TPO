@@ -8,10 +8,8 @@ import AdminDashboardPage from "../pages/AdminDashboardPage";
 function Layout({ children }) {
   function handleLogoError(event) {
     const fallbackSources = [
-      "/hardpoint-logo.png",
-      "/hardpoint-logo.jpg",
-      "/hardpoint-logo.jpeg",
-      "/hardpoint-logo.webp",
+      "https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png",
+      "https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.jpg",
       "/logo.png",
       "/logo.jpg"
     ];
@@ -42,7 +40,7 @@ function Layout({ children }) {
             <Link className="brand-logo-link" to="/" aria-label="HardPoint Store">
               <img
                 className="brand-logo"
-                src="/hardpoint-logo.png"
+                src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png"
                 alt="HardPoint Store"
                 data-attempt="0"
                 onError={handleLogoError}

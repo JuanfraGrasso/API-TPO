@@ -327,23 +327,20 @@ export default function CatalogPage() {
                 const availabilityClass = `status-badge status-${publication.availability_status}`;
 
                 return (
-                  <article key={publication.id} className="card publication-card">
-                    {coverImage ? (
-                      <img
-                        className="publication-image"
-                        src={coverImage.image_url}
-                        alt={coverImage.alt_text || publication.name}
-                      />
-                    ) : null}
-
+                  <>
+                    <article key={publication.id} className="card publication-card">
+                      {coverImage ? (
+                        <img
+                          className="publication-image"
+                          src={coverImage.image_url}
+                          alt={coverImage.alt_text || publication.name}
+                        />
+                      ) : null}
+                    </article>
                     <div className="publication-body">
-                      <span className="publication-category">
-                        {publication.categories?.name || "Sin categoria"}
-                      </span>
                       <h3>{publication.name}</h3>
                       <div className="publication-tags">
                         {publication.brand ? <span>Marca: {publication.brand}</span> : null}
-                        {publication.sku ? <span>SKU: {publication.sku}</span> : null}
                       </div>
                       <p>{publication.description}</p>
                       <div className="publication-meta">
@@ -351,7 +348,7 @@ export default function CatalogPage() {
                         <span className={availabilityClass}>{publication.availability_status}</span>
                       </div>
                     </div>
-                  </article>
+                  </>
                 );
               })}
             </div>
