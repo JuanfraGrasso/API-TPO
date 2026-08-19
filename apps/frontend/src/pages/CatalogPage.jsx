@@ -9,6 +9,7 @@ export default function CatalogPage() {
   const [activeAvailability, setActiveAvailability] = useState("Todos");
   const [sortBy, setSortBy] = useState("featured");
   const [maxPriceFilter, setMaxPriceFilter] = useState(null);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -162,143 +163,169 @@ export default function CatalogPage() {
   return (
     <section className="catalog-page catalog-page-wide">
       <div className="catalog-layout">
-        <aside className="card catalog-sidebar">
-          <h2 className="catalog-title">Catalogo</h2>
-
-          <div className="catalog-search-group">
-            <label htmlFor="catalog-search">Buscar</label>
-            <input
-              id="catalog-search"
-              type="search"
-              placeholder="Ej: RTX 4060, Kingston, SSD..."
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
+        <aside className={`card catalog-sidebar ${isMobileFilterOpen ? "is-open" : "is-closed"}`}>
+          <div className="catalog-sidebar-head">
+            <h2 className="catalog-title">Catalogo</h2>
+            <button
+              type="button"
+              className="catalog-mobile-toggle-btn"
+              onClick={() => setIsMobileFilterOpen((prev) => !prev)}
+              aria-expanded={isMobileFilterOpen}
+              aria-label={isMobileFilterOpen ? "Ocultar filtros" : "Mostrar filtros"}
+            >
+              <span>{isMobileFilterOpen ? "Ocultar filtros" : "Filtros y Búsqueda"}</span>
+              <svg
+                className={`catalog-toggle-icon ${isMobileFilterOpen ? "open" : ""}`}
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
           </div>
 
-          <div className="catalog-filter-group">
-            <h3>Categorias</h3>
-            <div className="catalog-filters-list">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  className={category === activeCategory ? "filter-row active" : "filter-row"}
-                  onClick={() => setActiveCategory(category)}
-                >
-                  <span>{category}</span>
-                  <span>{categoryCounts[category] || 0}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="catalog-filter-group">
-            <h3>Marcas</h3>
-            <div className="catalog-filters-list">
-              {brands.map((brand) => (
-                <button
-                  key={brand}
-                  type="button"
-                  className={brand === activeBrand ? "filter-row active" : "filter-row"}
-                  onClick={() => setActiveBrand(brand)}
-                >
-                  <span>{brand}</span>
-                  <span>{brandCounts[brand] || 0}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="catalog-filter-group">
-            <h3>Disponibilidad</h3>
-            <div className="catalog-filters-list">
-              {availabilityOptions.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  className={status === activeAvailability ? "filter-row active" : "filter-row"}
-                  onClick={() => setActiveAvailability(status)}
-                >
-                  <span>{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</span>
-                  <span>{availabilityCounts[status] || 0}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="catalog-filter-group">
-            <h3>Precio maximo</h3>
-            <div className="price-filter-wrap">
+          <div className="catalog-sidebar-body">
+            <div className="catalog-search-group">
+              <label htmlFor="catalog-search">Buscar</label>
               <input
-                type="range"
-                min={minPrice}
-                max={maxPrice || 1}
-                step="1000"
-                value={maxPriceFilter ?? (maxPrice || 1)}
-                onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
-                disabled={maxPrice === 0}
+                id="catalog-search"
+                type="search"
+                placeholder="Ej: RTX 4060, Kingston, SSD..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
               />
-              <div className="price-filter-values">
-                <span>{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</span>
-                <strong>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</strong>
+            </div>
+
+            <div className="catalog-filter-group">
+              <h3>Categorias</h3>
+              <div className="catalog-filters-list">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={category === activeCategory ? "filter-row active" : "filter-row"}
+                    onClick={() => setActiveCategory(category)}
+                  >
+                    <span>{category}</span>
+                    <span>{categoryCounts[category] || 0}</span>
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          <div className="catalog-filter-group">
-            <h3>Ordenar por</h3>
-            <div className="sort-options">
-              <label className="sort-option">
+            <div className="catalog-filter-group">
+              <h3>Marcas</h3>
+              <div className="catalog-filters-list">
+                {brands.map((brand) => (
+                  <button
+                    key={brand}
+                    type="button"
+                    className={brand === activeBrand ? "filter-row active" : "filter-row"}
+                    onClick={() => setActiveBrand(brand)}
+                  >
+                    <span>{brand}</span>
+                    <span>{brandCounts[brand] || 0}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="catalog-filter-group">
+              <h3>Disponibilidad</h3>
+              <div className="catalog-filters-list">
+                {availabilityOptions.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className={status === activeAvailability ? "filter-row active" : "filter-row"}
+                    onClick={() => setActiveAvailability(status)}
+                  >
+                    <span>{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</span>
+                    <span>{availabilityCounts[status] || 0}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="catalog-filter-group">
+              <h3>Precio maximo</h3>
+              <div className="price-filter-wrap">
                 <input
-                  type="radio"
-                  name="catalog-sort"
-                  value="featured"
-                  checked={sortBy === "featured"}
-                  onChange={() => setSortBy("featured")}
+                  type="range"
+                  min={minPrice}
+                  max={maxPrice || 1}
+                  step="1000"
+                  value={maxPriceFilter ?? (maxPrice || 1)}
+                  onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
+                  disabled={maxPrice === 0}
                 />
-                <span>Destacados</span>
-              </label>
-              <label className="sort-option">
-                <input
-                  type="radio"
-                  name="catalog-sort"
-                  value="price-asc"
-                  checked={sortBy === "price-asc"}
-                  onChange={() => setSortBy("price-asc")}
-                />
-                <span>Menor precio</span>
-              </label>
-              <label className="sort-option">
-                <input
-                  type="radio"
-                  name="catalog-sort"
-                  value="price-desc"
-                  checked={sortBy === "price-desc"}
-                  onChange={() => setSortBy("price-desc")}
-                />
-                <span>Mayor precio</span>
-              </label>
-              <label className="sort-option">
-                <input
-                  type="radio"
-                  name="catalog-sort"
-                  value="name-asc"
-                  checked={sortBy === "name-asc"}
-                  onChange={() => setSortBy("name-asc")}
-                />
-                <span>Nombre A-Z</span>
-              </label>
-              <label className="sort-option">
-                <input
-                  type="radio"
-                  name="catalog-sort"
-                  value="newest"
-                  checked={sortBy === "newest"}
-                  onChange={() => setSortBy("newest")}
-                />
-                <span>Mas recientes</span>
-              </label>
+                <div className="price-filter-values">
+                  <span>{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</span>
+                  <strong>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="catalog-filter-group">
+              <h3>Ordenar por</h3>
+              <div className="sort-options">
+                <label className="sort-option">
+                  <input
+                    type="radio"
+                    name="catalog-sort"
+                    value="featured"
+                    checked={sortBy === "featured"}
+                    onChange={() => setSortBy("featured")}
+                  />
+                  <span>Destacados</span>
+                </label>
+                <label className="sort-option">
+                  <input
+                    type="radio"
+                    name="catalog-sort"
+                    value="price-asc"
+                    checked={sortBy === "price-asc"}
+                    onChange={() => setSortBy("price-asc")}
+                  />
+                  <span>Menor precio</span>
+                </label>
+                <label className="sort-option">
+                  <input
+                    type="radio"
+                    name="catalog-sort"
+                    value="price-desc"
+                    checked={sortBy === "price-desc"}
+                    onChange={() => setSortBy("price-desc")}
+                  />
+                  <span>Mayor precio</span>
+                </label>
+                <label className="sort-option">
+                  <input
+                    type="radio"
+                    name="catalog-sort"
+                    value="name-asc"
+                    checked={sortBy === "name-asc"}
+                    onChange={() => setSortBy("name-asc")}
+                  />
+                  <span>Nombre A-Z</span>
+                </label>
+                <label className="sort-option">
+                  <input
+                    type="radio"
+                    name="catalog-sort"
+                    value="newest"
+                    checked={sortBy === "newest"}
+                    onChange={() => setSortBy("newest")}
+                  />
+                  <span>Mas recientes</span>
+                </label>
+              </div>
             </div>
           </div>
         </aside>

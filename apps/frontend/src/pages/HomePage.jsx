@@ -63,7 +63,7 @@ export default function HomePage() {
       </section>
 
       <section className="home-cards-stack">
-        <article className="card showcase-card">
+        <article className="card showcase-card showcase-card-orange">
           <img
             className="showcase-image"
             src="https://images.unsplash.com/photo-1624705002806-5d72df19c3ad?auto=format&fit=crop&w=1200&q=80"
@@ -76,13 +76,13 @@ export default function HomePage() {
               GPUs, memorias y almacenamiento seleccionados para dar el salto de
               rendimiento sin rehacer toda tu PC.
             </p>
-            <Link className="btn btn-primary" to="/catalogo">
+            <Link className="btn btn-card-dark" to="/catalogo">
               Ver componentes
             </Link>
           </div>
         </article>
 
-        <article className="card showcase-card showcase-card-reverse">
+        <article className="card showcase-card showcase-card-white showcase-card-reverse">
           <img
             className="showcase-image"
             src="https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=1200&q=80"
@@ -95,13 +95,13 @@ export default function HomePage() {
               Te ayudamos a definir una build estable para jornadas largas,
               multitarea y crecimiento futuro de tu setup.
             </p>
-            <Link className="btn btn-ghost" to="/contacto">
+            <Link className="btn btn-primary" to="/contacto">
               Pedir recomendacion
             </Link>
           </div>
         </article>
 
-        <article className="card showcase-card">
+        <article className="card showcase-card showcase-card-gray">
           <img
             className="showcase-image"
             src="https://images.unsplash.com/photo-1587202372616-b43abea06c2a?auto=format&fit=crop&w=1200&q=80"

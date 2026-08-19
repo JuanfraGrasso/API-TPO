@@ -78,9 +78,80 @@ function Layout({ children }) {
       </header>
       <main className="container">{children}</main>
       <footer className="site-footer">
-        <div className="site-footer-inner">
-          <p>HardPoint Store © 2026</p>
-          <p>Hardware, perifericos y componentes para tu proxima build.</p>
+        <div className="site-footer-container">
+          <div className="site-footer-grid">
+            {/* COLUMNA 1: INFO DE MARCA */}
+            <div className="footer-col footer-col-brand">
+              <div className="footer-brand">
+                <img
+                  className="brand-logo footer-logo"
+                  src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png"
+                  alt="HardPoint Store"
+                  onError={handleLogoError}
+                />
+                <span className="brand-logo-fallback footer-brand-fallback">HardPoint Store</span>
+              </div>
+              <p className="footer-description">
+                Especialistas en hardware gamer, componentes de alto rendimiento y armado de computadoras a medida con garantía oficial.
+              </p>
+              <div className="footer-badges">
+                <span className="footer-badge">🛡️ Garantía Oficial</span>
+                <span className="footer-badge">🚚 Envíos a todo el país</span>
+              </div>
+            </div>
+
+            {/* COLUMNA 2: NAVEGACION */}
+            <div className="footer-col">
+              <h4 className="footer-col-title">Navegación</h4>
+              <ul className="footer-links">
+                <li><Link to="/">Inicio</Link></li>
+                <li><Link to="/catalogo">Catálogo de Productos</Link></li>
+                <li><Link to="/contacto">Contacto y Asesoría</Link></li>
+                <li><Link to="/admin/login">Acceso Administrador</Link></li>
+              </ul>
+            </div>
+
+            {/* COLUMNA 3: CATEGORIAS */}
+            <div className="footer-col">
+              <h4 className="footer-col-title">Categorías</h4>
+              <ul className="footer-links">
+                <li><Link to="/catalogo">Placas de Video</Link></li>
+                <li><Link to="/catalogo">Procesadores</Link></li>
+                <li><Link to="/catalogo">Memorias RAM</Link></li>
+                <li><Link to="/catalogo">Almacenamiento SSD</Link></li>
+                <li><Link to="/catalogo">Periféricos & Gabinetes</Link></li>
+              </ul>
+            </div>
+
+            {/* COLUMNA 4: ATENCION & UBICACION */}
+            <div className="footer-col">
+              <h4 className="footer-col-title">Atención</h4>
+              <div className="footer-contact-info">
+                <p>
+                  <span>Tel / WhatsApp:</span>
+                  <strong>+54 11 5555-9090</strong>
+                </p>
+                <p>
+                  <span>Email:</span>
+                  <strong>admin@hardpoint.com</strong>
+                </p>
+                <p>
+                  <span>Ubicación:</span>
+                  <strong>Galerías Pacífico, CABA</strong>
+                </p>
+                <p>
+                  <span>Horarios:</span>
+                  <strong>Lun a Vie 9-19hs | Sáb 10-14hs</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* BARRA INFERIOR */}
+          <div className="site-footer-bottom">
+            <p>HardPoint Store © 2026. Todos los derechos reservados.</p>
+            <p className="footer-legal">Componentes, periféricos y tecnología de vanguardia.</p>
+          </div>
         </div>
       </footer>
     </div>
