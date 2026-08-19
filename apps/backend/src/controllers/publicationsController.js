@@ -48,6 +48,55 @@ export async function listPublicationsController(req, res, next) {
   }
 }
 
+function normalizeImagesInput(bodyImages, singleImageUrl, fallbackAltText) {
+  let list = [];
+  if (Array.isArray(bodyImages)) {
+    list = bodyImages
+      .map((item, index) => {
+        if (typeof item === "string") {
+          return {
+            image_url: item.trim(),
+            alt_text: fallbackAltText,
+            is_cover: index === 0
+          };
+        }
+        return {
+          image_url: item.image_url?.trim() || item.imageUrl?.trim() || "",
+          alt_text: item.alt_text?.trim() || fallbackAltText,
+          is_cover: Boolean(item.is_cover ?? item.isCover)
+        };
+      })
+      .filter((item) => Boolean(item.image_url));
+  } else if (singleImageUrl) {
+    list = [
+      {
+        image_url: singleImageUrl.trim(),
+        alt_text: fallbackAltText,
+        is_cover: true
+      }
+    ];
+  }
+
+  // De-duplicate by image_url
+  const uniqueMap = new Map();
+  for (const img of list) {
+    if (!uniqueMap.has(img.image_url)) {
+      uniqueMap.set(img.image_url, img);
+    }
+  }
+  const uniqueList = Array.from(uniqueMap.values());
+
+  // Ensure exactly one cover if list is not empty
+  if (uniqueList.length > 0) {
+    const hasCover = uniqueList.some((img) => img.is_cover);
+    if (!hasCover) {
+      uniqueList[0].is_cover = true;
+    }
+  }
+
+  return uniqueList;
+}
+
 export async function createPublicationController(req, res, next) {
   try {
     const name = req.body.name?.trim() || "";
@@ -59,7 +108,8 @@ export async function createPublicationController(req, res, next) {
     const availabilityStatus = req.body.availability_status || req.body.availabilityStatus || "disponible";
     const sku = req.body.sku?.trim() || null;
     const brand = req.body.brand?.trim() || null;
-    const imageUrl = req.body.image_url?.trim() || req.body.imageUrl?.trim() || null;
+    const singleImageUrl = req.body.image_url?.trim() || req.body.imageUrl?.trim() || null;
+    const bodyImages = req.body.images;
 
     if (!name) {
       throw badRequest("El nombre del producto es obligatorio.");
@@ -92,21 +142,27 @@ export async function createPublicationController(req, res, next) {
       throw new Error(`Error al crear la publicacion: ${insertError.message}`);
     }
 
+    const normalizedImages = normalizeImagesInput(bodyImages, singleImageUrl, name);
     let images = [];
-    if (imageUrl) {
+
+    if (normalizedImages.length > 0) {
       const { data: imagePub, error: imageError } = await supabase
         .from("publication_images")
-        .insert({
-          publication_id: createdPub.id,
-          image_url: imageUrl,
-          alt_text: name,
-          is_cover: true
-        })
+        .insert(
+          normalizedImages.map((img) => ({
+            publication_id: createdPub.id,
+            image_url: img.image_url,
+            alt_text: img.alt_text || name,
+            is_cover: img.is_cover
+          }))
+        )
         .select("id, image_url, alt_text, is_cover");
 
-      if (!imageError && imagePub) {
-        images = imagePub;
+      if (imageError) {
+        throw new Error(`Error al guardar las imagenes: ${imageError.message}`);
       }
+
+      images = imagePub || [];
     }
 
     res.status(201).json({
@@ -139,7 +195,8 @@ export async function updatePublicationController(req, res, next) {
     const sku = req.body.sku?.trim() || null;
     const brand = req.body.brand?.trim() || null;
     const isActive = req.body.is_active ?? req.body.isActive ?? true;
-    const imageUrl = req.body.image_url?.trim() || req.body.imageUrl?.trim() || null;
+    const singleImageUrl = req.body.image_url?.trim() || req.body.imageUrl?.trim() || null;
+    const bodyImages = req.body.images;
 
     if (!name) {
       throw badRequest("El nombre del producto es obligatorio.");
@@ -174,14 +231,25 @@ export async function updatePublicationController(req, res, next) {
       throw new Error(`Error al actualizar la publicacion: ${updateError.message}`);
     }
 
-    if (imageUrl) {
+    const imagesProvided = bodyImages !== undefined || singleImageUrl !== null;
+    if (imagesProvided) {
+      const normalizedImages = normalizeImagesInput(bodyImages, singleImageUrl, name);
       await supabase.from("publication_images").delete().eq("publication_id", id);
-      await supabase.from("publication_images").insert({
-        publication_id: id,
-        image_url: imageUrl,
-        alt_text: name,
-        is_cover: true
-      });
+
+      if (normalizedImages.length > 0) {
+        const { error: imageError } = await supabase.from("publication_images").insert(
+          normalizedImages.map((img) => ({
+            publication_id: id,
+            image_url: img.image_url,
+            alt_text: img.alt_text || name,
+            is_cover: img.is_cover
+          }))
+        );
+
+        if (imageError) {
+          throw new Error(`Error al guardar las imagenes: ${imageError.message}`);
+        }
+      }
     }
 
     const { data: refreshedImages } = await supabase

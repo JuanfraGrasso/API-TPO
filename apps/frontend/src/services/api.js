@@ -86,6 +86,24 @@ export async function deletePublication(id, token) {
   return readApiResponse(response, "No se pudo eliminar la publicacion");
 }
 
+export async function uploadImages(files, token) {
+  const formData = new FormData();
+  const fileList = Array.isArray(files) ? files : [files];
+  for (const file of fileList) {
+    formData.append("images", file);
+  }
+
+  const response = await fetch(`${API_URL}/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  return readApiResponse(response, "No se pudieron subir las imagenes");
+}
+
 export async function createInquiry(payload) {
   const response = await fetch(`${API_URL}/inquiries`, {
     method: "POST",

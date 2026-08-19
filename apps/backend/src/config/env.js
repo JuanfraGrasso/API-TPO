@@ -11,7 +11,8 @@ const env = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   adminEmail: process.env.ADMIN_EMAIL || "",
   adminPassword: process.env.ADMIN_PASSWORD || "",
-  adminSessionSecret: process.env.ADMIN_SESSION_SECRET || ""
+  adminSessionSecret: process.env.ADMIN_SESSION_SECRET || "",
+  supabaseStorageBucket: process.env.SUPABASE_STORAGE_BUCKET || "public-images"
 };
 
 export { env };

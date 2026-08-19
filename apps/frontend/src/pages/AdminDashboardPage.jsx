@@ -12,7 +12,8 @@ import {
   getStoredAdminSession,
   registerAdmin,
   updateInquiryStatus,
-  updatePublication
+  updatePublication,
+  uploadImages
 } from "../services/api";
 
 const initialPubForm = {
@@ -23,7 +24,7 @@ const initialPubForm = {
   price: "",
   is_price_visible: true,
   availability_status: "disponible",
-  image_url: "",
+  images: [],
   description: "",
   is_active: true
 };
@@ -49,6 +50,11 @@ export default function AdminDashboardPage() {
   const [pubSubmitting, setPubSubmitting] = useState(false);
   const [pubFeedback, setPubFeedback] = useState("");
   const [pubFeedbackType, setPubFeedbackType] = useState("info");
+
+  // Image Upload states
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [customImageUrl, setCustomImageUrl] = useState("");
+  const [imageUploadFeedback, setImageUploadFeedback] = useState("");
 
   // Inquiry Status Updating states
   const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
@@ -129,14 +135,18 @@ export default function AdminDashboardPage() {
   function handleOpenCreatePub() {
     setEditingPubId(null);
     setPubForm(initialPubForm);
+    setCustomImageUrl("");
+    setImageUploadFeedback("");
     setPubFeedback("");
     setShowPubForm(true);
   }
 
   function handleOpenEditPub(pub) {
-    const coverImage = pub.publication_images?.find((img) => img.is_cover)?.image_url
-      || pub.publication_images?.[0]?.image_url
-      || "";
+    const pubImages = (pub.publication_images || []).map((img, idx) => ({
+      image_url: img.image_url,
+      alt_text: img.alt_text || pub.name || "",
+      is_cover: Boolean(img.is_cover || (idx === 0 && !pub.publication_images?.some((x) => x.is_cover)))
+    }));
 
     setEditingPubId(pub.id);
     setPubForm({
@@ -147,10 +157,12 @@ export default function AdminDashboardPage() {
       price: pub.price != null ? String(pub.price) : "",
       is_price_visible: pub.is_price_visible ?? true,
       availability_status: pub.availability_status || "disponible",
-      image_url: coverImage,
+      images: pubImages,
       description: pub.description || "",
       is_active: pub.is_active ?? true
     });
+    setCustomImageUrl("");
+    setImageUploadFeedback("");
     setPubFeedback("");
     setShowPubForm(true);
   }
@@ -159,7 +171,96 @@ export default function AdminDashboardPage() {
     setShowPubForm(false);
     setEditingPubId(null);
     setPubForm(initialPubForm);
+    setCustomImageUrl("");
+    setImageUploadFeedback("");
     setPubFeedback("");
+  }
+
+  // Image Upload Handlers
+  async function handleImageFilesUpload(event) {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    const token = getStoredAdminSession();
+    if (!token) return;
+
+    try {
+      setUploadingImages(true);
+      setImageUploadFeedback("");
+
+      const result = await uploadImages(files, token);
+      const uploadedList = result.data || [];
+
+      setPubForm((prev) => {
+        const existing = [...prev.images];
+        const hasCover = existing.some((img) => img.is_cover);
+
+        const newItems = uploadedList.map((item, idx) => ({
+          image_url: item.url,
+          alt_text: prev.name || "Imagen de producto",
+          is_cover: !hasCover && idx === 0
+        }));
+
+        return {
+          ...prev,
+          images: [...existing, ...newItems]
+        };
+      });
+
+      setImageUploadFeedback(`${uploadedList.length} imagen(es) subida(s) con éxito.`);
+    } catch (err) {
+      setImageUploadFeedback(err.message || "Error al subir las imágenes.");
+    } finally {
+      setUploadingImages(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleAddCustomUrlImage(event) {
+    event.preventDefault();
+    const url = customImageUrl.trim();
+    if (!url) return;
+
+    setPubForm((prev) => {
+      const existing = [...prev.images];
+      const hasCover = existing.some((img) => img.is_cover);
+      return {
+        ...prev,
+        images: [
+          ...existing,
+          {
+            image_url: url,
+            alt_text: prev.name || "Imagen de producto",
+            is_cover: !hasCover
+          }
+        ]
+      };
+    });
+
+    setCustomImageUrl("");
+  }
+
+  function handleRemoveImage(indexToRemove) {
+    setPubForm((prev) => {
+      const filtered = prev.images.filter((_, idx) => idx !== indexToRemove);
+      if (filtered.length > 0 && !filtered.some((img) => img.is_cover)) {
+        filtered[0].is_cover = true;
+      }
+      return {
+        ...prev,
+        images: filtered
+      };
+    });
+  }
+
+  function handleSetCoverImage(indexToCover) {
+    setPubForm((prev) => ({
+      ...prev,
+      images: prev.images.map((img, idx) => ({
+        ...img,
+        is_cover: idx === indexToCover
+      }))
+    }));
   }
 
   async function handleSavePublication(event) {
@@ -186,7 +287,7 @@ export default function AdminDashboardPage() {
         price: pubForm.price !== "" ? Number(pubForm.price) : null,
         is_price_visible: pubForm.is_price_visible,
         availability_status: pubForm.availability_status,
-        image_url: pubForm.image_url.trim() || null,
+        images: pubForm.images,
         description: pubForm.description.trim(),
         is_active: pubForm.is_active
       };
@@ -429,15 +530,128 @@ export default function AdminDashboardPage() {
                           </select>
                         </label>
 
-                        <label className="form-field form-field-full">
-                          <span>URL de Imagen Principal</span>
-                          <input
-                            type="url"
-                            value={pubForm.image_url}
-                            onChange={(e) => setPubForm({ ...pubForm, image_url: e.target.value })}
-                            placeholder="https://ejemplo.com/imagen.jpg"
-                          />
-                        </label>
+                        {/* GESTOR DE IMAGENES CON SUPABASE STORAGE */}
+                        <div className="form-field form-field-full image-manager-section">
+                          <div className="image-manager-header">
+                            <div>
+                              <span className="image-manager-title">Galería de Imágenes</span>
+                              <p className="image-manager-subtitle">
+                                Sube imágenes desde tu computadora a Supabase Storage o agrega URLs directas.
+                              </p>
+                            </div>
+                            <span className="image-count-badge">
+                              {pubForm.images.length} {pubForm.images.length === 1 ? "imagen" : "imágenes"}
+                            </span>
+                          </div>
+
+                          {/* DROPZONE / FILE INPUT */}
+                          <div className="image-upload-zone">
+                            <label className={`image-upload-dropzone ${uploadingImages ? "uploading" : ""}`}>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleImageFilesUpload}
+                                disabled={uploadingImages}
+                                style={{ display: "none" }}
+                              />
+                              <div className="image-upload-dropzone-content">
+                                <svg
+                                  width="30"
+                                  height="30"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                  <polyline points="17 8 12 3 7 8" />
+                                  <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <strong>
+                                  {uploadingImages
+                                    ? "Subiendo archivos a Supabase Storage..."
+                                    : "Haz clic aquí para seleccionar imágenes de tu PC"}
+                                </strong>
+                                <small>Formatos admitidos: JPG, PNG, WEBP, GIF (máx. 10MB por archivo)</small>
+                              </div>
+                            </label>
+                          </div>
+
+                          {/* FEEDBACK DE SUBIDA */}
+                          {imageUploadFeedback ? (
+                            <p className="form-feedback form-feedback-info" style={{ marginTop: "0.5rem" }}>
+                              {imageUploadFeedback}
+                            </p>
+                          ) : null}
+
+                          {/* OPCION SECUNDARIA: AGREGAR URL MANUAL */}
+                          <div className="image-url-add-row">
+                            <input
+                              type="url"
+                              value={customImageUrl}
+                              onChange={(e) => setCustomImageUrl(e.target.value)}
+                              placeholder="O pega una URL externa (https://...)"
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              onClick={handleAddCustomUrlImage}
+                              disabled={!customImageUrl.trim()}
+                            >
+                              + Agregar URL
+                            </button>
+                          </div>
+
+                          {/* LISTA / GRILLA DE IMAGENES CARGADAS */}
+                          {pubForm.images.length > 0 ? (
+                            <div className="images-preview-grid">
+                              {pubForm.images.map((img, index) => (
+                                <div
+                                  key={`${img.image_url}-${index}`}
+                                  className={`image-preview-card ${img.is_cover ? "is-cover" : ""}`}
+                                >
+                                  <div className="image-preview-thumb-wrap">
+                                    <img src={img.image_url} alt={`Preview ${index + 1}`} />
+                                    {img.is_cover ? (
+                                      <span className="cover-badge">★ Portada</span>
+                                    ) : null}
+                                  </div>
+
+                                  <div className="image-preview-card-actions">
+                                    {!img.is_cover ? (
+                                      <button
+                                        type="button"
+                                        className="btn-set-cover"
+                                        onClick={() => handleSetCoverImage(index)}
+                                        title="Establecer como imagen de portada"
+                                      >
+                                        Hacer Portada
+                                      </button>
+                                    ) : (
+                                      <span className="cover-text-label">Principal</span>
+                                    )}
+
+                                    <button
+                                      type="button"
+                                      className="btn-remove-image"
+                                      onClick={() => handleRemoveImage(index)}
+                                      title="Quitar esta imagen"
+                                    >
+                                      ✕ Quitar
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="no-images-hint">
+                              No hay imágenes agregadas aún para este producto.
+                            </p>
+                          )}
+                        </div>
 
                         <label className="form-field form-field-full">
                           <span>Descripción *</span>
