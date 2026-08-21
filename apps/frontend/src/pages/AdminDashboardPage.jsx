@@ -408,7 +408,6 @@ export default function AdminDashboardPage() {
           <div className="card admin-main-card">
             <div className="admin-dashboard-header">
               <div>
-                <span className="eyebrow">Panel interno</span>
                 <h2>Panel Administrador</h2>
                 <p>
                   {admin ? `Sesión activa de ${admin.firstName} ${admin.lastName}` : "Gestión del comercio."}
@@ -433,6 +432,12 @@ export default function AdminDashboardPage() {
                 onClick={() => setActiveTab("inquiries")}
               >
                 Consultas ({inquiries.length})
+              </button>
+              <button
+                className={`admin-tab-btn ${activeTab === "admins" ? "active" : ""}`}
+                onClick={() => setActiveTab("admins")}
+              >
+                Administradores
               </button>
             </div>
 
@@ -724,28 +729,28 @@ export default function AdminDashboardPage() {
 
                           return (
                             <tr key={pub.id} style={{ opacity: pub.is_active ? 1 : 0.5 }}>
-                              <td>
+                              <td data-label="Imagen">
                                 {cover ? (
                                   <img src={cover} alt={pub.name} className="admin-table-thumb" />
                                 ) : (
                                   <span style={{ fontSize: "0.75rem", color: "#999" }}>Sin foto</span>
                                 )}
                               </td>
-                              <td>
+                              <td data-label="Nombre">
                                 <strong>{pub.name}</strong>
                                 {pub.brand ? <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{pub.brand}</div> : null}
                               </td>
-                              <td>{pub.categories?.name || "Sin categoría"}</td>
-                              <td>{pub.is_price_visible ? formatPrice(pub.price) : "Oculto"}</td>
-                              <td>
+                              <td data-label="Categoría">{pub.categories?.name || "Sin categoría"}</td>
+                              <td data-label="Precio">{pub.is_price_visible ? formatPrice(pub.price) : "Oculto"}</td>
+                              <td data-label="Stock">
                                 <span className={`status-badge status-${pub.availability_status}`}>
                                   {pub.availability_status}
                                 </span>
                               </td>
-                              <td>
+                              <td data-label="Estado">
                                 <small>{pub.is_active ? "Activo" : "Inactivo"}</small>
                               </td>
-                              <td>
+                              <td data-label="Acciones">
                                 <div className="admin-actions">
                                   <button
                                     className="btn btn-ghost btn-sm"
@@ -817,91 +822,96 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             ) : null}
-          </div>
 
-          {/* TARJETA LATERAL (DERECHA): REGISTRAR ADMINISTRADOR */}
-          <aside className="admin-side-card">
-            <h3>Registrar Admin</h3>
-            <p>Crear un nuevo usuario con permisos de administración.</p>
+            {activeTab === "admins" ? (
+              <div className="admin-tab-content admin-admins-tab">
+                <div className="admin-section-header">
+                  <div>
+                    <h3>Registrar administrador</h3>
+                    <p>Crear un nuevo usuario con permisos de administración.</p>
+                  </div>
+                </div>
 
-            <form onSubmit={handleCreateAdmin}>
-              <div className="form-grid" style={{ gridTemplateColumns: "1fr" }}>
-                <label className="form-field">
-                  <span>Nombre *</span>
-                  <input
-                    type="text"
-                    value={newAdmin.firstName}
-                    onChange={(e) =>
-                      setNewAdmin((prev) => ({ ...prev, firstName: e.target.value }))
-                    }
-                    placeholder="Nombre"
-                    required
-                  />
-                </label>
+                <form className="admin-create-form" onSubmit={handleCreateAdmin}>
+                  <div className="form-grid">
+                    <label className="form-field">
+                      <span>Nombre *</span>
+                      <input
+                        type="text"
+                        value={newAdmin.firstName}
+                        onChange={(e) =>
+                          setNewAdmin((prev) => ({ ...prev, firstName: e.target.value }))
+                        }
+                        placeholder="Nombre"
+                        required
+                      />
+                    </label>
 
-                <label className="form-field">
-                  <span>Apellido *</span>
-                  <input
-                    type="text"
-                    value={newAdmin.lastName}
-                    onChange={(e) =>
-                      setNewAdmin((prev) => ({ ...prev, lastName: e.target.value }))
-                    }
-                    placeholder="Apellido"
-                    required
-                  />
-                </label>
+                    <label className="form-field">
+                      <span>Apellido *</span>
+                      <input
+                        type="text"
+                        value={newAdmin.lastName}
+                        onChange={(e) =>
+                          setNewAdmin((prev) => ({ ...prev, lastName: e.target.value }))
+                        }
+                        placeholder="Apellido"
+                        required
+                      />
+                    </label>
 
-                <label className="form-field">
-                  <span>Email *</span>
-                  <input
-                    type="email"
-                    value={newAdmin.email}
-                    onChange={(e) =>
-                      setNewAdmin((prev) => ({ ...prev, email: e.target.value }))
-                    }
-                    placeholder="admin@ejemplo.com"
-                    required
-                  />
-                </label>
+                    <label className="form-field form-field-full">
+                      <span>Email *</span>
+                      <input
+                        type="email"
+                        value={newAdmin.email}
+                        onChange={(e) =>
+                          setNewAdmin((prev) => ({ ...prev, email: e.target.value }))
+                        }
+                        placeholder="admin@ejemplo.com"
+                        required
+                      />
+                    </label>
 
-                <label className="form-field">
-                  <span>Teléfono</span>
-                  <input
-                    type="tel"
-                    value={newAdmin.phone}
-                    onChange={(e) =>
-                      setNewAdmin((prev) => ({ ...prev, phone: e.target.value }))
-                    }
-                    placeholder="Opcional"
-                  />
-                </label>
+                    <label className="form-field form-field-full">
+                      <span>Teléfono</span>
+                      <input
+                        type="tel"
+                        value={newAdmin.phone}
+                        onChange={(e) =>
+                          setNewAdmin((prev) => ({ ...prev, phone: e.target.value }))
+                        }
+                        placeholder="Opcional"
+                      />
+                    </label>
 
-                <label className="form-field">
-                  <span>Contraseña temporal *</span>
-                  <input
-                    type="password"
-                    value={newAdmin.password}
-                    onChange={(e) =>
-                      setNewAdmin((prev) => ({ ...prev, password: e.target.value }))
-                    }
-                    placeholder="••••••••"
-                    required
-                  />
-                </label>
+                    <label className="form-field form-field-full">
+                      <span>Contraseña *</span>
+                      <input
+                        type="password"
+                        value={newAdmin.password}
+                        onChange={(e) =>
+                          setNewAdmin((prev) => ({ ...prev, password: e.target.value }))
+                        }
+                        placeholder="••••••••"
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  {createFeedback ? (
+                    <p className={`form-feedback form-feedback-${createFeedbackType}`}>
+                      {createFeedback}
+                    </p>
+                  ) : null}
+
+                  <button className="btn btn-primary" type="submit" disabled={createLoading}>
+                    {createLoading ? "Creando..." : "Crear administrador"}
+                  </button>
+                </form>
               </div>
-
-              {createFeedback ? (
-                <p className={`form-feedback form-feedback-${createFeedbackType}`} style={{ marginTop: "0.8rem" }}>
-                  {createFeedback}
-                </p>
-              ) : null}
-
-              <button className="btn btn-primary" type="submit" disabled={createLoading} style={{ width: "100%", marginTop: "1.2rem" }}>
-                {createLoading ? "Creando..." : "Crear administrador"}
-              </button>
-            </form>
-          </aside>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </section>

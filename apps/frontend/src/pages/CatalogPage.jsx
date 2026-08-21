@@ -10,6 +10,13 @@ export default function CatalogPage() {
   const [sortBy, setSortBy] = useState("featured");
   const [maxPriceFilter, setMaxPriceFilter] = useState(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [openFilterSections, setOpenFilterSections] = useState({
+    categories: true,
+    brands: false,
+    availability: false,
+    price: false,
+    sort: false
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -83,6 +90,31 @@ export default function CatalogPage() {
       currency: "ARS",
       maximumFractionDigits: 0
     }).format(value);
+  }
+
+  function toggleFilterSection(section) {
+    setOpenFilterSections((current) => ({
+      ...current,
+      [section]: !current[section]
+    }));
+  }
+
+  function FilterSectionHeader({ section, children }) {
+    const isOpen = openFilterSections[section];
+
+    return (
+      <button
+        type="button"
+        className="catalog-filter-heading"
+        aria-expanded={isOpen}
+        onClick={() => toggleFilterSection(section)}
+      >
+        <span>{children}</span>
+        <span className={`catalog-filter-chevron ${isOpen ? "open" : ""}`} aria-hidden="true">
+          &gt;
+        </span>
+      </button>
+    );
   }
 
   const categoryCounts = publications.reduce(
@@ -203,78 +235,87 @@ export default function CatalogPage() {
             </div>
 
             <div className="catalog-filter-group">
-              <h3>Categorias</h3>
-              <div className="catalog-filters-list">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    className={category === activeCategory ? "filter-row active" : "filter-row"}
-                    onClick={() => setActiveCategory(category)}
-                  >
-                    <span>{category}</span>
-                    <span>{categoryCounts[category] || 0}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="catalog-filter-group">
-              <h3>Marcas</h3>
-              <div className="catalog-filters-list">
-                {brands.map((brand) => (
-                  <button
-                    key={brand}
-                    type="button"
-                    className={brand === activeBrand ? "filter-row active" : "filter-row"}
-                    onClick={() => setActiveBrand(brand)}
-                  >
-                    <span>{brand}</span>
-                    <span>{brandCounts[brand] || 0}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="catalog-filter-group">
-              <h3>Disponibilidad</h3>
-              <div className="catalog-filters-list">
-                {availabilityOptions.map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    className={status === activeAvailability ? "filter-row active" : "filter-row"}
-                    onClick={() => setActiveAvailability(status)}
-                  >
-                    <span>{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</span>
-                    <span>{availabilityCounts[status] || 0}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="catalog-filter-group">
-              <h3>Precio maximo</h3>
-              <div className="price-filter-wrap">
-                <input
-                  type="range"
-                  min={minPrice}
-                  max={maxPrice || 1}
-                  step="1000"
-                  value={maxPriceFilter ?? (maxPrice || 1)}
-                  onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
-                  disabled={maxPrice === 0}
-                />
-                <div className="price-filter-values">
-                  <span>{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</span>
-                  <strong>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</strong>
+              <FilterSectionHeader section="categories">Categorias</FilterSectionHeader>
+              {openFilterSections.categories ? (
+                <div className="catalog-filters-list">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      className={category === activeCategory ? "filter-row active" : "filter-row"}
+                      onClick={() => setActiveCategory(category)}
+                    >
+                      <span>{category}</span>
+                      <span>{categoryCounts[category] || 0}</span>
+                    </button>
+                  ))}
                 </div>
-              </div>
+              ) : null}
             </div>
 
             <div className="catalog-filter-group">
-              <h3>Ordenar por</h3>
-              <div className="sort-options">
+              <FilterSectionHeader section="brands">Marcas</FilterSectionHeader>
+              {openFilterSections.brands ? (
+                <div className="catalog-filters-list">
+                  {brands.map((brand) => (
+                    <button
+                      key={brand}
+                      type="button"
+                      className={brand === activeBrand ? "filter-row active" : "filter-row"}
+                      onClick={() => setActiveBrand(brand)}
+                    >
+                      <span>{brand}</span>
+                      <span>{brandCounts[brand] || 0}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="catalog-filter-group">
+              <FilterSectionHeader section="availability">Disponibilidad</FilterSectionHeader>
+              {openFilterSections.availability ? (
+                <div className="catalog-filters-list">
+                  {availabilityOptions.map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      className={status === activeAvailability ? "filter-row active" : "filter-row"}
+                      onClick={() => setActiveAvailability(status)}
+                    >
+                      <span>{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</span>
+                      <span>{availabilityCounts[status] || 0}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="catalog-filter-group">
+              <FilterSectionHeader section="price">Precio máximo</FilterSectionHeader>
+              {openFilterSections.price ? (
+                <div className="price-filter-wrap">
+                  <input
+                    type="range"
+                    min={minPrice}
+                    max={maxPrice || 1}
+                    step="1000"
+                    value={maxPriceFilter ?? (maxPrice || 1)}
+                    onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
+                    disabled={maxPrice === 0}
+                  />
+                  <div className="price-filter-values">
+                    <span>{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</span>
+                    <strong>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</strong>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="catalog-filter-group">
+              <FilterSectionHeader section="sort">Ordenar por</FilterSectionHeader>
+              {openFilterSections.sort ? (
+                <div className="sort-options">
                 <label className="sort-option">
                   <input
                     type="radio"
@@ -325,23 +366,20 @@ export default function CatalogPage() {
                   />
                   <span>Mas recientes</span>
                 </label>
-              </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </aside>
 
         <section className="catalog-results">
-          <div className="catalog-results-head">
-            <h3>{activeCategory === "Todas" ? "Todos los productos" : activeCategory}</h3>
-            <p>{visiblePublications.length} resultados</p>
-          </div>
 
           {isLoading ? <p>Cargando publicaciones...</p> : null}
           {error ? <p className="error-message">{error}</p> : null}
 
           {!isLoading && !error ? (
             <div className="catalog-grid">
-              {visiblePublications.map((publication) => {
+              {visiblePublications.map((publication, index) => {
                 const coverImage = publication.publication_images?.find((image) => image.is_cover)
                   || publication.publication_images?.[0];
                 const priceLabel = publication.is_price_visible && publication.price != null
@@ -354,17 +392,23 @@ export default function CatalogPage() {
                 const availabilityClass = `status-badge status-${publication.availability_status}`;
 
                 return (
-                  <>
-                    <article key={publication.id} className="card publication-card">
-                      {coverImage ? (
-                        <img
-                          className="publication-image"
-                          src={coverImage.image_url}
-                          alt={coverImage.alt_text || publication.name}
-                        />
-                      ) : null}
-                    </article>
-                    <div className="publication-body">
+                    <article
+                      key={publication.id}
+                      className="card publication-card"
+                      style={{ "--card-index": index }}
+                    >
+                      <div className="publication-media">
+                        {coverImage ? (
+                          <img
+                            className="publication-image"
+                            src={coverImage.image_url}
+                            alt={coverImage.alt_text || publication.name}
+                          />
+                        ) : (
+                          <div className="publication-image-placeholder">Sin imagen</div>
+                        )}
+                      </div>
+                      <div className="publication-body">
                       <h3>{publication.name}</h3>
                       <div className="publication-tags">
                         {publication.brand ? <span>Marca: {publication.brand}</span> : null}
@@ -375,7 +419,7 @@ export default function CatalogPage() {
                         <span className={availabilityClass}>{publication.availability_status}</span>
                       </div>
                     </div>
-                  </>
+                    </article>
                 );
               })}
             </div>
