@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createInquiry } from "../services/api";
+import { useEffect, useState } from "react";
+import { createInquiry, getCommerceProfile } from "../services/api";
 
 const initialForm = {
   fullName: "",
@@ -7,6 +7,15 @@ const initialForm = {
   phone: "",
   subject: "",
   message: ""
+};
+
+const initialCommerceProfile = {
+  business_name: "HardPoint Computacion",
+  address: "",
+  phone: "",
+  instagram_url: "",
+  facebook_url: "",
+  business_hours: ""
 };
 
 function validateForm(form) {
@@ -41,8 +50,36 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState("");
+  const [commerceProfile, setCommerceProfile] = useState(initialCommerceProfile);
   const errors = validateForm(form);
   const isFormValid = Object.keys(errors).length === 0;
+
+  useEffect(() => {
+    let active = true;
+
+    getCommerceProfile()
+      .then((result) => {
+        if (active && result.data) {
+          setCommerceProfile((current) => ({ ...current, ...result.data }));
+        }
+      })
+      .catch(() => {
+        // Keep fallback contact data when the public profile is unavailable.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function getSocialLabel(url, fallback) {
+    if (!url) return fallback;
+    try {
+      return new URL(url).pathname.replace(/^\/+|\/+$/g, "") || fallback;
+    } catch {
+      return url;
+    }
+  }
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -124,7 +161,7 @@ export default function ContactPage() {
                 </div>
                 <div className="channel-info">
                   <span className="channel-label">Teléfono / WhatsApp</span>
-                  <span className="channel-value">+54 11 5555-9090</span>
+                  <span className="channel-value">{commerceProfile.phone || "No informado"}</span>
                 </div>
               </div>
 
@@ -151,7 +188,7 @@ export default function ContactPage() {
                 </div>
                 <div className="channel-info">
                   <span className="channel-label">Instagram</span>
-                  <span className="channel-value">@hardpointpc</span>
+                  <span className="channel-value">{getSocialLabel(commerceProfile.instagram_url, "No informado")}</span>
                 </div>
               </div>
 
@@ -163,7 +200,7 @@ export default function ContactPage() {
                 </div>
                 <div className="channel-info">
                   <span className="channel-label">Facebook</span>
-                  <span className="channel-value">HardPoint PC</span>
+                  <span className="channel-value">{getSocialLabel(commerceProfile.facebook_url, "No informado")}</span>
                 </div>
               </div>
 
@@ -176,7 +213,7 @@ export default function ContactPage() {
                 </div>
                 <div className="channel-info">
                   <span className="channel-label">Horarios de atención</span>
-                  <span className="channel-value">Lun a Vie 09:00 a 19:00 | Sáb 10:00 a 14:00</span>
+                  <span className="channel-value">{commerceProfile.business_hours || "No informado"}</span>
                 </div>
               </div>
             </div>
@@ -194,7 +231,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 style={{ margin: 0 }}>Nuestra Ubicación</h3>
-                  <p className="contact-card-subtitle">Galerías Pacífico, Av. Córdoba 550, CABA</p>
+                  <p className="contact-card-subtitle">{commerceProfile.address || "Dirección no informada"}</p>
                 </div>
               </div>
             </div>

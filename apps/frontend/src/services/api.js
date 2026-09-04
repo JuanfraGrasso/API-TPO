@@ -49,6 +49,65 @@ export async function getCategories() {
   return readApiResponse(response, "No se pudieron obtener las categorias");
 }
 
+export async function getCommerceProfile(token) {
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const response = await fetch(`${API_URL}/commerce-profile`, {
+    headers
+  });
+
+  return readApiResponse(response, "No se pudo obtener el perfil institucional");
+}
+
+export async function updateCommerceProfile(payload, token) {
+  const response = await fetch(`${API_URL}/commerce-profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo guardar el perfil institucional");
+}
+
+export async function createCategory(payload, token) {
+  const response = await fetch(`${API_URL}/categories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo crear la categoria");
+}
+
+export async function updateCategory(id, payload, token) {
+  const response = await fetch(`${API_URL}/categories/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo actualizar la categoria");
+}
+
+export async function deleteCategory(id, token) {
+  const response = await fetch(`${API_URL}/categories/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return readApiResponse(response, "No se pudo eliminar la categoria");
+}
+
 export async function createPublication(payload, token) {
   const response = await fetch(`${API_URL}/publications`, {
     method: "POST",
@@ -172,6 +231,17 @@ export async function updateInquiryStatus(id, status, token) {
   });
 
   return readApiResponse(response, "No se pudo actualizar el estado de la consulta");
+}
+
+export async function deleteInquiry(id, token) {
+  const response = await fetch(`${API_URL}/inquiries/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return readApiResponse(response, "No se pudo eliminar la consulta");
 }
 
 

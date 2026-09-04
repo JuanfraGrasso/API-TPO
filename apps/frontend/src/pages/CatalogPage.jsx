@@ -19,6 +19,7 @@ export default function CatalogPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeImageIndexByPublication, setActiveImageIndexByPublication] = useState({});
 
   useEffect(() => {
     let isMounted = true;
@@ -97,6 +98,26 @@ export default function CatalogPage() {
       ...current,
       [section]: !current[section]
     }));
+  }
+
+  function goToPreviousImage(publicationId, totalImages) {
+    setActiveImageIndexByPublication((prev) => {
+      const current = prev[publicationId] || 0;
+      const next = (current - 1 + totalImages) % totalImages;
+      return { ...prev, [publicationId]: next };
+    });
+  }
+
+  function goToNextImage(publicationId, totalImages) {
+    setActiveImageIndexByPublication((prev) => {
+      const current = prev[publicationId] || 0;
+      const next = (current + 1) % totalImages;
+      return { ...prev, [publicationId]: next };
+    });
+  }
+
+  function goToImage(publicationId, index) {
+    setActiveImageIndexByPublication((prev) => ({ ...prev, [publicationId]: index }));
   }
 
   function FilterSectionHeader({ section, children }) {
@@ -380,8 +401,12 @@ export default function CatalogPage() {
           {!isLoading && !error ? (
             <div className="catalog-grid">
               {visiblePublications.map((publication, index) => {
-                const coverImage = publication.publication_images?.find((image) => image.is_cover)
-                  || publication.publication_images?.[0];
+                const images = publication.publication_images && publication.publication_images.length > 0
+                  ? publication.publication_images
+                  : [];
+                const defaultImageIndex = Math.max(images.findIndex((image) => image.is_cover), 0);
+                const activeImageIndex = activeImageIndexByPublication[publication.id] ?? defaultImageIndex;
+                const activeImage = images[activeImageIndex] || images[0];
                 const priceLabel = publication.is_price_visible && publication.price != null
                   ? new Intl.NumberFormat("es-AR", {
                     style: "currency",
@@ -398,15 +423,59 @@ export default function CatalogPage() {
                       style={{ "--card-index": index }}
                     >
                       <div className="publication-media">
-                        {coverImage ? (
+                        {activeImage ? (
                           <img
                             className="publication-image"
-                            src={coverImage.image_url}
-                            alt={coverImage.alt_text || publication.name}
+                            src={activeImage.image_url}
+                            alt={activeImage.alt_text || publication.name}
                           />
                         ) : (
                           <div className="publication-image-placeholder">Sin imagen</div>
                         )}
+
+                        {images.length > 1 ? (
+                          <>
+                            <button
+                              type="button"
+                              className="carousel-arrow carousel-arrow-prev"
+                              aria-label="Imagen anterior"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                goToPreviousImage(publication.id, images.length);
+                              }}
+                            >
+                              ‹
+                            </button>
+                            <button
+                              type="button"
+                              className="carousel-arrow carousel-arrow-next"
+                              aria-label="Imagen siguiente"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                goToNextImage(publication.id, images.length);
+                              }}
+                            >
+                              ›
+                            </button>
+                            <div className="carousel-dots">
+                              {images.map((image, imageIndex) => (
+                                <button
+                                  key={image.id || imageIndex}
+                                  type="button"
+                                  className={`carousel-dot ${imageIndex === activeImageIndex ? "active" : ""}`}
+                                  aria-label={`Ver imagen ${imageIndex + 1}`}
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    goToImage(publication.id, imageIndex);
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        ) : null}
                       </div>
                       <div className="publication-body">
                       <h3>{publication.name}</h3>

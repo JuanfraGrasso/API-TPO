@@ -106,3 +106,26 @@ export async function updateInquiryStatusController(req, res, next) {
     next(error);
   }
 }
+
+export async function deleteInquiryController(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) {
+      throw badRequest("ID de consulta invalido.");
+    }
+
+    const supabase = getSupabaseClient();
+    const { error } = await supabase
+      .from("inquiries")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(`Error al eliminar la consulta: ${error.message}`);
+    }
+
+    res.json({ ok: true, message: "Consulta eliminada correctamente." });
+  } catch (error) {
+    next(error);
+  }
+}

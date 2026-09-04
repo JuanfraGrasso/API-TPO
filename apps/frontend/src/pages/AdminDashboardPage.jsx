@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   clearAdminSession,
+  createCategory,
   createPublication,
+  deleteCategory,
+  deleteInquiry,
   deletePublication,
   getAdminInquiries,
   getAdminPublications,
   getAdminSession,
   getCategories,
+  getCommerceProfile,
   getStoredAdminProfile,
   getStoredAdminSession,
   registerAdmin,
   updateInquiryStatus,
+  updateCategory,
+  updateCommerceProfile,
   updatePublication,
   uploadImages
 } from "../services/api";
@@ -29,19 +36,36 @@ const initialPubForm = {
   is_active: true
 };
 
+const initialCommerceProfile = {
+  business_name: "",
+  address: "",
+  phone: "",
+  instagram_url: "",
+  facebook_url: "",
+  website_url: "",
+  business_hours: ""
+};
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(getStoredAdminProfile());
   const [activeTab, setActiveTab] = useState("publications");
+  const [isTabsMenuOpen, setIsTabsMenuOpen] = useState(false);
 
   // Data states
   const [publications, setPublications] = useState([]);
   const [categories, setCategories] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [commerceProfile, setCommerceProfile] = useState(initialCommerceProfile);
 
   // Loaders & errors
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Commerce profile states
+  const [profileSubmitting, setProfileSubmitting] = useState(false);
+  const [profileFeedback, setProfileFeedback] = useState("");
+  const [profileFeedbackType, setProfileFeedbackType] = useState("info");
 
   // Publication Form states
   const [showPubForm, setShowPubForm] = useState(false);
@@ -55,6 +79,14 @@ export default function AdminDashboardPage() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [customImageUrl, setCustomImageUrl] = useState("");
   const [imageUploadFeedback, setImageUploadFeedback] = useState("");
+
+  // Category Form states
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
+  const [categorySubmitting, setCategorySubmitting] = useState(false);
+  const [categoryFeedback, setCategoryFeedback] = useState("");
+  const [categoryFeedbackType, setCategoryFeedbackType] = useState("info");
 
   // Inquiry Status Updating states
   const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
@@ -90,10 +122,11 @@ export default function AdminDashboardPage() {
         if (!active) return;
         setAdmin(session.admin);
 
-        const [inquiryRes, pubRes, catRes] = await Promise.allSettled([
+        const [inquiryRes, pubRes, catRes, profileRes] = await Promise.allSettled([
           getAdminInquiries(token),
           getAdminPublications(),
-          getCategories()
+          getCategories(),
+          getCommerceProfile(token)
         ]);
 
         if (!active) return;
@@ -106,6 +139,12 @@ export default function AdminDashboardPage() {
         }
         if (catRes.status === "fulfilled") {
           setCategories(catRes.value.data || []);
+        }
+        if (profileRes.status === "fulfilled" && profileRes.value.data) {
+          setCommerceProfile({
+            ...initialCommerceProfile,
+            ...profileRes.value.data
+          });
         }
       } catch (requestError) {
         if (!active) return;
@@ -131,7 +170,6 @@ export default function AdminDashboardPage() {
     navigate("/admin/login", { replace: true });
   }
 
-  // Publication Handlers
   function handleOpenCreatePub() {
     setEditingPubId(null);
     setPubForm(initialPubForm);
@@ -176,7 +214,100 @@ export default function AdminDashboardPage() {
     setPubFeedback("");
   }
 
-  // Image Upload Handlers
+  function handleOpenCreateCategory() {
+    setEditingCategoryId(null);
+    setCategoryForm({ name: "", description: "" });
+    setCategoryFeedback("");
+    setShowCategoryForm(true);
+  }
+
+  function handleCancelCategoryForm() {
+    setShowCategoryForm(false);
+    setEditingCategoryId(null);
+    setCategoryForm({ name: "", description: "" });
+    setCategoryFeedback("");
+  }
+
+  async function handleSaveCategory(event) {
+    event.preventDefault();
+    const token = getStoredAdminSession();
+
+    if (!token || categorySubmitting) return;
+
+    if (!categoryForm.name.trim()) {
+      setCategoryFeedbackType("error");
+      setCategoryFeedback("El nombre de la categoria es obligatorio.");
+      return;
+    }
+
+    try {
+      setCategorySubmitting(true);
+      setCategoryFeedback("");
+
+      const payload = {
+        name: categoryForm.name.trim(),
+        description: categoryForm.description.trim() || null
+      };
+      const response = editingCategoryId
+        ? await updateCategory(editingCategoryId, payload, token)
+        : await createCategory(payload, token);
+
+      setCategories((prev) => {
+        const next = editingCategoryId
+          ? prev.map((category) => category.id === editingCategoryId ? response.data : category)
+          : [...prev, response.data];
+        return next.sort((a, b) => a.name.localeCompare(b.name, "es"));
+      });
+      if (!editingCategoryId) {
+        setPubForm((prev) => ({ ...prev, category_id: response.data.id }));
+      }
+      setShowCategoryForm(false);
+      setEditingCategoryId(null);
+      setCategoryForm({ name: "", description: "" });
+    } catch (err) {
+      setCategoryFeedbackType("error");
+      setCategoryFeedback(err.message || "No se pudo guardar la categoria.");
+    } finally {
+      setCategorySubmitting(false);
+    }
+  }
+
+  function handleOpenEditCategory(category) {
+    setEditingCategoryId(category.id);
+    setCategoryForm({
+      name: category.name || "",
+      description: category.description || ""
+    });
+    setCategoryFeedback("");
+    setShowCategoryForm(true);
+  }
+
+  async function handleDeleteCategory(category) {
+    const token = getStoredAdminSession();
+    if (!token || !window.confirm(`¿Seguro que deseas eliminar la categoria "${category.name}"?`)) return;
+
+    try {
+      await deleteCategory(category.id, token);
+      setCategories((prev) => prev.filter((item) => item.id !== category.id));
+    } catch (err) {
+      setCategoryFeedbackType("error");
+      setCategoryFeedback(err.message || "No se pudo eliminar la categoria.");
+    }
+  }
+
+  async function handleDeleteInquiry(id) {
+    const token = getStoredAdminSession();
+    if (!token || !window.confirm("¿Seguro que deseas eliminar esta consulta?")) return;
+
+    try {
+      await deleteInquiry(id, token);
+      setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== id));
+      setInquiryFeedback("Consulta eliminada correctamente.");
+    } catch (err) {
+      setInquiryFeedback(err.message || "No se pudo eliminar la consulta.");
+    }
+  }
+
   async function handleImageFilesUpload(event) {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
@@ -338,7 +469,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Inquiry Status Handler
   async function handleChangeInquiryStatus(id, newStatus) {
     const token = getStoredAdminSession();
     if (!token) return;
@@ -359,7 +489,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Admin Register Handler
   async function handleCreateAdmin(event) {
     event.preventDefault();
     const token = getStoredAdminSession();
@@ -388,6 +517,41 @@ export default function AdminDashboardPage() {
     }
   }
 
+  async function handleSaveCommerceProfile(event) {
+    event.preventDefault();
+    const token = getStoredAdminSession();
+
+    if (!token || profileSubmitting) return;
+
+    if (!commerceProfile.business_name.trim()) {
+      setProfileFeedbackType("error");
+      setProfileFeedback("Completa el nombre del comercio.");
+      return;
+    }
+
+    try {
+      setProfileSubmitting(true);
+      setProfileFeedback("");
+
+      const response = await updateCommerceProfile(
+        {
+          ...commerceProfile,
+          business_name: commerceProfile.business_name.trim()
+        },
+        token
+      );
+
+      setCommerceProfile({ ...initialCommerceProfile, ...response.data });
+      setProfileFeedbackType("success");
+      setProfileFeedback("Perfil institucional actualizado correctamente.");
+    } catch (requestError) {
+      setProfileFeedbackType("error");
+      setProfileFeedback(requestError.message || "No se pudo guardar el perfil institucional.");
+    } finally {
+      setProfileSubmitting(false);
+    }
+  }
+
   function formatPrice(val) {
     if (val == null) return "Consultar";
     return new Intl.NumberFormat("es-AR", {
@@ -396,6 +560,14 @@ export default function AdminDashboardPage() {
       maximumFractionDigits: 0
     }).format(val);
   }
+
+  const adminTabs = [
+    { key: "publications", label: `Productos (${publications.length})` },
+    { key: "categories", label: `Categorías (${categories.length})` },
+    { key: "inquiries", label: `Consultas (${inquiries.length})` },
+    { key: "admins", label: "Administradores" },
+    { key: "commerce", label: "Comercio" }
+  ];
 
   return (
     <section className="admin-page-wide">
@@ -419,26 +591,58 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            {/* PESTAÑAS PRINCIPALES */}
-            <div className="admin-tabs">
+            <div className="admin-tabs admin-tabs-desktop">
+              {adminTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  className={`admin-tab-btn ${activeTab === tab.key ? "active" : ""}`}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="admin-tabs-mobile">
               <button
-                className={`admin-tab-btn ${activeTab === "publications" ? "active" : ""}`}
-                onClick={() => setActiveTab("publications")}
+                type="button"
+                className="admin-tabs-mobile-trigger"
+                aria-expanded={isTabsMenuOpen}
+                onClick={() => setIsTabsMenuOpen((prev) => !prev)}
               >
-                Productos ({publications.length})
+                <span>{adminTabs.find((tab) => tab.key === activeTab)?.label}</span>
+                <svg
+                  className={`admin-tabs-mobile-icon ${isTabsMenuOpen ? "open" : ""}`}
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
-              <button
-                className={`admin-tab-btn ${activeTab === "inquiries" ? "active" : ""}`}
-                onClick={() => setActiveTab("inquiries")}
-              >
-                Consultas ({inquiries.length})
-              </button>
-              <button
-                className={`admin-tab-btn ${activeTab === "admins" ? "active" : ""}`}
-                onClick={() => setActiveTab("admins")}
-              >
-                Administradores
-              </button>
+
+              {isTabsMenuOpen ? (
+                <div className="admin-tabs-mobile-menu">
+                  {adminTabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      className={`admin-tabs-mobile-option ${activeTab === tab.key ? "active" : ""}`}
+                      onClick={() => {
+                        setActiveTab(tab.key);
+                        setIsTabsMenuOpen(false);
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             {pubFeedback ? (
@@ -457,9 +661,11 @@ export default function AdminDashboardPage() {
                   ) : null}
                 </div>
 
-                {/* FORMULARIO DE PRODUCTO (CREAR / EDITAR) */}
-                {showPubForm ? (
-                  <article className="publication-form-card">
+                {/* FORMULARIO DE PRODUCTO (CREAR / EDITAR) EN MODAL, RENDERIZADO VIA PORTAL */}
+                {showPubForm ? createPortal(
+                  <div className="modal-overlay" onClick={handleCancelPubForm}>
+                  <article className="publication-form-card modal-content" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="modal-close-btn" onClick={handleCancelPubForm} aria-label="Cerrar">✕</button>
                     <h4>{editingPubId ? "Editar Producto" : "Nuevo Producto"}</h4>
                     <form onSubmit={handleSavePublication}>
                       <div className="form-grid">
@@ -703,79 +909,168 @@ export default function AdminDashboardPage() {
                       </div>
                     </form>
                   </article>
+                  </div>,
+                  document.body
                 ) : null}
 
-                {/* TABLA DE PRODUCTOS */}
+                {/* GRILLA DE PRODUCTOS (ESTILO CATALOGO) */}
                 {publications.length === 0 ? (
                   <p>No hay publicaciones registradas.</p>
                 ) : (
-                  <div className="admin-table-wrapper">
-                    <table className="admin-table">
-                      <thead>
-                        <tr>
-                          <th>Imagen</th>
-                          <th>Nombre</th>
-                          <th>Categoría</th>
-                          <th>Precio</th>
-                          <th>Stock</th>
-                          <th>Estado</th>
-                          <th>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {publications.map((pub) => {
-                          const cover = pub.publication_images?.find((img) => img.is_cover)?.image_url
-                            || pub.publication_images?.[0]?.image_url;
+                  <div className="catalog-grid admin-products-grid">
+                    {publications.map((pub) => {
+                      const cover = pub.publication_images?.find((img) => img.is_cover)?.image_url
+                        || pub.publication_images?.[0]?.image_url;
 
-                          return (
-                            <tr key={pub.id} style={{ opacity: pub.is_active ? 1 : 0.5 }}>
-                              <td data-label="Imagen">
-                                {cover ? (
-                                  <img src={cover} alt={pub.name} className="admin-table-thumb" />
-                                ) : (
-                                  <span style={{ fontSize: "0.75rem", color: "#999" }}>Sin foto</span>
-                                )}
-                              </td>
-                              <td data-label="Nombre">
-                                <strong>{pub.name}</strong>
-                                {pub.brand ? <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{pub.brand}</div> : null}
-                              </td>
-                              <td data-label="Categoría">{pub.categories?.name || "Sin categoría"}</td>
-                              <td data-label="Precio">{pub.is_price_visible ? formatPrice(pub.price) : "Oculto"}</td>
-                              <td data-label="Stock">
-                                <span className={`status-badge status-${pub.availability_status}`}>
-                                  {pub.availability_status}
-                                </span>
-                              </td>
-                              <td data-label="Estado">
-                                <small>{pub.is_active ? "Activo" : "Inactivo"}</small>
-                              </td>
-                              <td data-label="Acciones">
-                                <div className="admin-actions">
+                      return (
+                        <article
+                          key={pub.id}
+                          className={`card publication-card admin-product-card ${!pub.is_active ? "is-inactive" : ""}`}
+                        >
+                          <div className="publication-media">
+                            {cover ? (
+                              <img src={cover} alt={pub.name} className="publication-image" />
+                            ) : (
+                              <div className="publication-image-placeholder">Sin imagen</div>
+                            )}
+                          </div>
+                          <div className="publication-body">
+                            <h3>{pub.name}</h3>
+                            <div className="publication-tags">
+                              {pub.brand ? <span>Marca: {pub.brand}</span> : null}
+                              <span>{pub.categories?.name || "Sin categoría"}</span>
+                            </div>
+                            <div className="publication-meta">
+                              <strong>{pub.is_price_visible ? formatPrice(pub.price) : "Precio oculto"}</strong>
+                              <span className={`status-badge status-${pub.availability_status}`}>
+                                {pub.availability_status}
+                              </span>
+                            </div>
+                            <div className="admin-product-footer">
+                              <small>{pub.is_active ? "Activo" : "Inactivo"}</small>
+                              <div className="admin-actions">
+                                <button
+                                  className="btn btn-ghost btn-sm"
+                                  onClick={() => handleOpenEditPub(pub)}
+                                >
+                                  Editar
+                                </button>
+                                {pub.is_active ? (
                                   <button
-                                    className="btn btn-ghost btn-sm"
-                                    onClick={() => handleOpenEditPub(pub)}
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => handleDeletePublication(pub.id)}
                                   >
-                                    Editar
+                                    Eliminar
                                   </button>
-                                  {pub.is_active ? (
-                                    <button
-                                      className="btn btn-danger btn-sm"
-                                      onClick={() => handleDeletePublication(pub.id)}
-                                    >
-                                      Eliminar
-                                    </button>
-                                  ) : null}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 )}
               </div>
+            ) : null}
+
+            {activeTab === "categories" ? (
+              <div className="admin-tab-content admin-categories-tab">
+                <div className="admin-section-header">
+                  <div>
+                    <h3>Categorías</h3>
+                    <p>Organizá los productos del catálogo por categoría.</p>
+                  </div>
+                  <button className="btn btn-primary" type="button" onClick={handleOpenCreateCategory}>
+                    + Nueva categoría
+                  </button>
+                </div>
+
+                {categoryFeedback ? (
+                  <p className={`form-feedback form-feedback-${categoryFeedbackType}`}>{categoryFeedback}</p>
+                ) : null}
+
+                {categories.length === 0 ? (
+                  <p>No hay categorías registradas.</p>
+                ) : (
+                  <div className="category-management-list">
+                    {categories.map((category) => (
+                      <article className="category-management-item" key={category.id}>
+                        <div>
+                          <strong>{category.name}</strong>
+                          {category.description ? <p>{category.description}</p> : null}
+                        </div>
+                        <div className="admin-actions">
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            type="button"
+                            onClick={() => handleOpenEditCategory(category)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            type="button"
+                            onClick={() => handleDeleteCategory(category)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {showCategoryForm ? createPortal(
+              <div className="modal-overlay" onClick={handleCancelCategoryForm}>
+                <article className="publication-form-card modal-content modal-content-sm" onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="modal-close-btn" onClick={handleCancelCategoryForm} aria-label="Cerrar">✕</button>
+                  <h4>{editingCategoryId ? "Editar Categoría" : "Nueva Categoría"}</h4>
+                  <form onSubmit={handleSaveCategory}>
+                    <div className="form-grid">
+                      <label className="form-field form-field-full">
+                        <span>Nombre *</span>
+                        <input
+                          type="text"
+                          value={categoryForm.name}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                          placeholder="Ej: Placas de video"
+                          required
+                        />
+                      </label>
+                      <label className="form-field form-field-full">
+                        <span>Descripción</span>
+                        <textarea
+                          rows="2"
+                          value={categoryForm.description}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                          placeholder="Descripción opcional de la categoría"
+                        />
+                      </label>
+                    </div>
+
+                    {categoryFeedback ? (
+                      <p className={`form-feedback form-feedback-${categoryFeedbackType}`}>{categoryFeedback}</p>
+                    ) : null}
+
+                    <div className="form-actions-bar">
+                      <button className="btn btn-primary" type="submit" disabled={categorySubmitting}>
+                        {categorySubmitting
+                          ? "Guardando..."
+                          : editingCategoryId
+                            ? "Guardar cambios"
+                            : "Crear Categoría"}
+                      </button>
+                      <button className="btn btn-ghost" type="button" onClick={handleCancelCategoryForm}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </article>
+              </div>,
+              document.body
             ) : null}
 
             {/* TAB 2: CONSULTAS CON CAMBIO DE ESTADO */}
@@ -816,6 +1111,13 @@ export default function AdminDashboardPage() {
                       <div className="admin-inquiry-body">
                         <p><strong>Asunto:</strong> {inquiry.subject}</p>
                         <p>{inquiry.message}</p>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          type="button"
+                          onClick={() => handleDeleteInquiry(inquiry.id)}
+                        >
+                          Eliminar consulta
+                        </button>
                       </div>
                     </article>
                   ))}
@@ -825,12 +1127,7 @@ export default function AdminDashboardPage() {
 
             {activeTab === "admins" ? (
               <div className="admin-tab-content admin-admins-tab">
-                <div className="admin-section-header">
-                  <div>
                     <h3>Registrar administrador</h3>
-                    <p>Crear un nuevo usuario con permisos de administración.</p>
-                  </div>
-                </div>
 
                 <form className="admin-create-form" onSubmit={handleCreateAdmin}>
                   <div className="form-grid">
@@ -908,6 +1205,117 @@ export default function AdminDashboardPage() {
                   <button className="btn btn-primary" type="submit" disabled={createLoading}>
                     {createLoading ? "Creando..." : "Crear administrador"}
                   </button>
+                </form>
+              </div>
+            ) : null}
+
+            {activeTab === "commerce" ? (
+              <div className="admin-tab-content admin-commerce-tab">
+                    <h3>Información institucional</h3>
+
+
+                <form className="commerce-profile-form" onSubmit={handleSaveCommerceProfile}>
+                  <div className="form-grid">
+                    <label className="form-field form-field-full">
+                      <span>Nombre del comercio *</span>
+                      <input
+                        type="text"
+                        value={commerceProfile.business_name}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, business_name: event.target.value }))
+                        }
+                        placeholder="Ej: HardPoint Computación"
+                        maxLength="150"
+                        required
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Dirección</span>
+                      <input
+                        type="text"
+                        value={commerceProfile.address}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, address: event.target.value }))
+                        }
+                        placeholder="Dirección del local"
+                        maxLength="200"
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Teléfono</span>
+                      <input
+                        type="tel"
+                        value={commerceProfile.phone}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, phone: event.target.value }))
+                        }
+                        placeholder="+54 11 ..."
+                        maxLength="40"
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Instagram</span>
+                      <input
+                        type="url"
+                        value={commerceProfile.instagram_url}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, instagram_url: event.target.value }))
+                        }
+                        placeholder="https://instagram.com/..."
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Facebook</span>
+                      <input
+                        type="url"
+                        value={commerceProfile.facebook_url}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, facebook_url: event.target.value }))
+                        }
+                        placeholder="https://facebook.com/..."
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Sitio web</span>
+                      <input
+                        type="url"
+                        value={commerceProfile.website_url}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, website_url: event.target.value }))
+                        }
+                        placeholder="https://..."
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Horarios de atención</span>
+                      <input
+                        type="text"
+                        value={commerceProfile.business_hours}
+                        onChange={(event) =>
+                          setCommerceProfile((current) => ({ ...current, business_hours: event.target.value }))
+                        }
+                        placeholder="Lun a Vie 9 a 18 hs"
+                      />
+                    </label>
+                  </div>
+
+                  {profileFeedback ? (
+                    <p className={`form-feedback form-feedback-${profileFeedbackType}`}>
+                      {profileFeedback}
+                    </p>
+                  ) : null}
+
+                  <div className="form-actions-bar">
+                    <button className="btn btn-primary" type="submit" disabled={profileSubmitting}>
+                      {profileSubmitting ? "Guardando..." : "Guardar información"}
+                    </button>
+                  </div>
                 </form>
               </div>
             ) : null}

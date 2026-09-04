@@ -20,12 +20,10 @@ export async function uploadImagesController(req, res, next) {
     const uploadedImages = [];
 
     for (const file of files) {
-      // Validar tipo de archivo
       if (!file.mimetype.startsWith("image/")) {
         throw badRequest(`El archivo ${file.originalname} no es una imagen valida.`);
       }
 
-      // Nombre seguro y unico
       const cleanName = file.originalname
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
