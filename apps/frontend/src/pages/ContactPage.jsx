@@ -64,7 +64,6 @@ export default function ContactPage() {
         }
       })
       .catch(() => {
-        // Keep fallback contact data when the public profile is unavailable.
       });
 
     return () => {
@@ -255,7 +254,6 @@ export default function ContactPage() {
         <div className="contact-form-column">
           <article className="card contact-form-card">
             <div className="contact-form-header">
-              <span className="eyebrow">Mensaje directo</span>
               <h3 style={{ margin: "0.2rem 0 0.4rem" }}>Envianos tu consulta</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.92rem", margin: 0 }}>
                 Completá los datos y un asesor técnico te responderá a la brevedad.

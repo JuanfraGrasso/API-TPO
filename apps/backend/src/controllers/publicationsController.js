@@ -77,7 +77,6 @@ function normalizeImagesInput(bodyImages, singleImageUrl, fallbackAltText) {
     ];
   }
 
-  // De-duplicate by image_url
   const uniqueMap = new Map();
   for (const img of list) {
     if (!uniqueMap.has(img.image_url)) {
@@ -86,7 +85,6 @@ function normalizeImagesInput(bodyImages, singleImageUrl, fallbackAltText) {
   }
   const uniqueList = Array.from(uniqueMap.values());
 
-  // Ensure exactly one cover if list is not empty
   if (uniqueList.length > 0) {
     const hasCover = uniqueList.some((img) => img.is_cover);
     if (!hasCover) {

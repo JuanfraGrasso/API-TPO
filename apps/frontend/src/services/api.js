@@ -210,6 +210,55 @@ export async function getAdminSession(token) {
   return readApiResponse(response, "No se pudo validar la sesion");
 }
 
+export async function getAdmins(token) {
+  const response = await fetch(`${API_URL}/auth/admins`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return readApiResponse(response, "No se pudieron obtener los administradores");
+}
+
+export async function updateAdminProfile(payload, token) {
+  const response = await fetch(`${API_URL}/auth/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudieron actualizar los datos personales");
+}
+
+export async function changeAdminPassword(payload, token) {
+  const response = await fetch(`${API_URL}/auth/password`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return readApiResponse(response, "No se pudo cambiar la contraseña");
+}
+
+export async function resetAdminPassword(id, password, token) {
+  const response = await fetch(`${API_URL}/auth/admins/${id}/password`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ password })
+  });
+
+  return readApiResponse(response, "No se pudo restablecer la contraseña");
+}
+
 export async function getAdminInquiries(token) {
   const response = await fetch(`${API_URL}/inquiries`, {
     headers: {
