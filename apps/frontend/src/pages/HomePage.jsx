@@ -7,7 +7,7 @@ export default function HomePage() {
         <img
           className="hero-banner-image"
           src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/background.jpg"
-          alt="Notebook gamer sobre escritorio oscuro"
+          alt="Background"
         />
         <div className="hero-banner-overlay" />
         <div className="hero-banner-content">

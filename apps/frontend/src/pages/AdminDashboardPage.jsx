@@ -217,11 +217,6 @@ export default function AdminDashboardPage() {
     };
   }, [activeTab]);
 
-  function handleLogout() {
-    clearAdminSession();
-    navigate("/admin/login", { replace: true });
-  }
-
   function handleOpenCreatePub() {
     setEditingPubId(null);
     setPubForm(initialPubForm);
@@ -748,14 +743,9 @@ export default function AdminDashboardPage() {
           <div className="card admin-main-card">
             <div className="admin-dashboard-header">
               <div>
-                <h2>Panel Administrador</h2>
                 <p>
                 </p>
               </div>
-
-              <button className="btn btn-ghost" type="button" onClick={handleLogout}>
-                Cerrar sesión
-              </button>
             </div>
 
             <div className="admin-tabs admin-tabs-desktop">

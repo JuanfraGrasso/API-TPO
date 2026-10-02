@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{base_url}}/auth/profile"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"firstName\": \"Juan\",\r
+
+    \    \"lastName\": \"Grasso\",\r
+
+    \    \"email\": \"test@gmail.com\",\r
+
+    \    \"phone\": \"1235612\"\r
+
+    }"
+examples: .resources/Profile PUT.resources/examples
+order: 4086503180787353

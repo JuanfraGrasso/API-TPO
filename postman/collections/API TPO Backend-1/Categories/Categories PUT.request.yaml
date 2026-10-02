@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/categories/:id"
+method: PUT
+pathVariables:
+  - key: id
+    value: "1"
+    description: ""
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Procesadores y CPUs\",\r
+
+    \  \"description\": \"Procesadores\"\r
+
+    }"
+order: 4321969830976394

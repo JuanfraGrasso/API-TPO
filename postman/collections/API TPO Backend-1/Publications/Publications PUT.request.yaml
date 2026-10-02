@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{base_url}}/publications/:id"
+method: PUT
+pathVariables:
+  id: "35"
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"test3\",\r
+
+    \  \"categoryId\": 11,\r
+
+    \  \"description\": \"16 núcleos y 24 hilos, zócalo LGA1700 ideal para gaming.\",\r
+
+    \  \"price\": 450000,\r
+
+    \  \"isPriceVisible\": true,\r
+
+    \  \"availabilityStatus\": \"disponible\",\r
+
+    \  \"sku\": \"CPU-INT-13700K2\",\r
+
+    \  \"brand\": \"Intel\",\r
+
+    \  \"imageUrl\": \"https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/publications/1790294518475-4mbbp-wallpaperbetter.com_1920x1080.jpg\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhZG1pbiI6eyJpZCI6IjA2MTUzNmYxLTJlOWYtNDE1MS04Mzk4LWM5YWVjZTcyZjczNSIsImZpcnN0TmFtZSI6Ikp1YW4gRnJhbmNpc2NvIiwibGFzdE5hbWUiOiJHcmFzc28iLCJlbWFpbCI6Imp1YW5mcmEuZ3Jhc3NvQGhvdG1haWwuY29tIiwicm9sZSI6ImFkbWluIn0sImV4cCI6MTc5MDM1NTU0NTQ4Mn0.mkbOxoIl-ev1_CPslGQbbc7aJVpbMwA1CTVtxXx8aX8
+examples: .resources/Publications PUT.resources/examples
+order: 136185329730687

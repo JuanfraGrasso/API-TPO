@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{base_url}}/commerce-profile"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Hardpoint Hardware\",\r
+
+    \  \"description\": \"Venta de componentes de PC, periféricos y tecnología
+    de alta gama.\",\r
+
+    \  \"address\": \"Av. Corrientes 1234, CABA\",\r
+
+    \  \"phone\": \"1144445555\",\r
+
+    \  \"email\": \"contacto@hardpoint.com\",\r
+
+    \  \"opening_hours\": \"Lunes a Viernes de 9:00 a 18:00 hs\",\r
+
+    \  \"social_media\": {\r
+
+    \    \"instagram\": \"@hardpoint_tech\",\r
+
+    \    \"facebook\": \"hardpointtech\"\r
+
+    \  }\r
+
+    }"
+order: 2627384968654950

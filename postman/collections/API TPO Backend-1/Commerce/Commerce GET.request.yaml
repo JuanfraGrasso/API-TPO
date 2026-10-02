@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}/commerce-profile"
+method: GET
+order: 1790375099955

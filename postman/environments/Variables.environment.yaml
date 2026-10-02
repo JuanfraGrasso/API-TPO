@@ -1,0 +1,4 @@
+name: Variables
+values:
+  - key: base_url
+    value: ''

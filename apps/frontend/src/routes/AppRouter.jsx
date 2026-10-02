@@ -1,11 +1,42 @@
-import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import CatalogPage from "../pages/CatalogPage";
 import ContactPage from "../pages/ContactPage";
 import LoginPage from "../pages/LoginPage";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
+import { clearAdminSession, getStoredAdminSession } from "../services/api";
 
 function Layout({ children }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getStoredAdminSession()));
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(getStoredAdminSession()));
+    setIsProfileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleLogout() {
+    clearAdminSession();
+    setIsLoggedIn(false);
+    setIsProfileMenuOpen(false);
+    navigate("/admin/login", { replace: true });
+  }
+
   function handleLogoError(event) {
     const fallbackSources = [
       "https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png",
@@ -55,25 +86,71 @@ function Layout({ children }) {
             </nav>
           </div>
 
-          <Link className="login-icon-btn" to="/admin/login" aria-label="Ingresar al panel admin">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path
-                d="M20 21a8 8 0 0 0-16 0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-              <circle
-                cx="12"
-                cy="8"
-                r="3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              />
-            </svg>
-          </Link>
+          {isLoggedIn ? (
+            <div className="profile-menu" ref={profileMenuRef}>
+              <button
+                type="button"
+                className="login-icon-btn"
+                aria-label="Cuenta de administrador"
+                aria-haspopup="true"
+                aria-expanded={isProfileMenuOpen}
+                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    d="M20 21a8 8 0 0 0-16 0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  />
+                </svg>
+              </button>
+
+              {isProfileMenuOpen ? (
+                <div className="profile-menu-dropdown">
+                  <Link
+                    className="profile-menu-item"
+                    to="/admin"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  >
+                    Panel
+                  </Link>
+                  <button type="button" className="profile-menu-item" onClick={handleLogout}>
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <Link className="login-icon-btn" to="/admin/login" aria-label="Ingresar al panel admin">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M20 21a8 8 0 0 0-16 0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="12"
+                  cy="8"
+                  r="3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                />
+              </svg>
+            </Link>
+          )}
         </div>
       </header>
       <main className="container">{children}</main>
@@ -95,8 +172,8 @@ function Layout({ children }) {
                 Especialistas en hardware gamer, componentes de alto rendimiento y armado de computadoras a medida con garantía oficial.
               </p>
               <div className="footer-badges">
-                <span className="footer-badge">🛡️ Garantía Oficial</span>
-                <span className="footer-badge">🚚 Envíos a todo el país</span>
+                <span className="footer-badge">Garantía Oficial</span>
+                <span className="footer-badge">Envíos a todo el país</span>
               </div>
             </div>
 
@@ -121,29 +198,6 @@ function Layout({ children }) {
                 <li><Link to="/catalogo">Almacenamiento SSD</Link></li>
                 <li><Link to="/catalogo">Periféricos & Gabinetes</Link></li>
               </ul>
-            </div>
-
-            {/* COLUMNA 4: ATENCION & UBICACION */}
-            <div className="footer-col">
-              <h4 className="footer-col-title">Atención</h4>
-              <div className="footer-contact-info">
-                <p>
-                  <span>Tel / WhatsApp:</span>
-                  <strong>+54 11 5555-9090</strong>
-                </p>
-                <p>
-                  <span>Email:</span>
-                  <strong>admin@hardpoint.com</strong>
-                </p>
-                <p>
-                  <span>Ubicación:</span>
-                  <strong>Galerías Pacífico, CABA</strong>
-                </p>
-                <p>
-                  <span>Horarios:</span>
-                  <strong>Lun a Vie 9-19hs | Sáb 10-14hs</strong>
-                </p>
-              </div>
             </div>
           </div>
 

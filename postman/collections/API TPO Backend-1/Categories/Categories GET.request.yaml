@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}/categories"
+method: GET
+order: 159572589743

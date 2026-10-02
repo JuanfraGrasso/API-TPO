@@ -1,0 +1,5 @@
+$kind: http-request
+url: "{{base_url}}/publications"
+method: GET
+examples: .resources/Publications GET.resources/examples
+order: 246029390259

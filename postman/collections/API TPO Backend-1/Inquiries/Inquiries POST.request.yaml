@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{base_url}}/inquiries"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Carlos Gómez\",\r
+
+    \  \"email\": \"carlos.gomez@email.com\",\r
+
+    \  \"phone\": \"1187654321\",\r
+
+    \  \"subject\": \"Consulta por stock y cuotas\",\r
+
+    \  \"message\": \"Hola, ¿tienen disponibilidad del procesador en el local
+    para retirar hoy?\"\r
+
+    }"
+order: 1790375029573

@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{base_url}}/publications"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"TEST-EXPO\",\r
+
+    \  \"categoryId\": 11,\r
+
+    \  \"description\": \"16 núcleos y 24 hilos, zócalo LGA1700 ideal para gaming.\",\r
+
+    \  \"priceInput\": 450000,\r
+
+    \  \"isPriceVisible\": true,\r
+
+    \  \"availabilityStatus\": \"disponible\",\r
+
+    \  \"sku\": \"EXPO-TEST\",\r
+
+    \  \"brand\": \"Intel\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhZG1pbiI6eyJpZCI6IjA2MTUzNmYxLTJlOWYtNDE1MS04Mzk4LWM5YWVjZTcyZjczNSIsImZpcnN0TmFtZSI6Ikp1YW4gRnJhbmNpc2NvIiwibGFzdE5hbWUiOiJHcmFzc28iLCJlbWFpbCI6Imp1YW5mcmEuZ3Jhc3NvQGhvdG1haWwuY29tIiwicm9sZSI6ImFkbWluIn0sImV4cCI6MTc5MDM1NTU0NTQ4Mn0.mkbOxoIl-ev1_CPslGQbbc7aJVpbMwA1CTVtxXx8aX8
+examples: .resources/Publications POST.resources/examples
+order: 647153928337

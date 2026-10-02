@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{base_url}}/auth/admins"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: eyJhZG1pbiI6eyJpZCI6IjA2MTUzNmYxLTJlOWYtNDE1MS04Mzk4LWM5YWVjZTcyZjczNSIsImZpcnN0TmFtZSI6Ikp1YW4gRnJhbmNpc2NvIiwibGFzdE5hbWUiOiJHcmFzc28iLCJlbWFpbCI6Imp1YW5mcmEuZ3Jhc3NvQGhvdG1haWwuY29tIiwicm9sZSI6ImFkbWluIn0sImV4cCI6MTc5MDM1NTU0NTQ4Mn0.mkbOxoIl-ev1_CPslGQbbc7aJVpbMwA1CTVtxXx8aX8
+examples: .resources/Admins GET.resources/examples
+order: 1071063878643996
