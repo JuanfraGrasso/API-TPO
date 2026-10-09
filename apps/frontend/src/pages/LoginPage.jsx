@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Alert, Box, Button, CircularProgress, Paper, Stack, TextField, Typography } from "@mui/material";
 import {
   getAdminSession,
   getStoredAdminSession,
@@ -58,48 +59,41 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="card auth-card">
-      <div className="auth-card-copy">
-        <span className="eyebrow">Acceso interno</span>
-        <h2>Login Administrador</h2>
-        <p>Ingreso para gestionar publicaciones, categorias y consultas.</p>
-      </div>
+    <Paper component="section" className="card auth-card" elevation={0} variant="outlined">
+      <Box className="auth-card-copy">
+        <Typography variant="overline" color="primary.main" fontWeight={700}>Acceso interno</Typography>
+        <Typography component="h1" variant="h4" fontWeight={800}>Login Administrador</Typography>
+        <Typography color="text.secondary">Ingreso para gestionar publicaciones, categorías y consultas.</Typography>
+      </Box>
 
-      <form className="contact-form auth-form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <label className="form-field form-field-full">
-            <span>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="admin@hardpoint.com"
-              autoComplete="email"
-              required
-            />
-          </label>
-
-          <label className="form-field form-field-full">
-            <span>Contraseña</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Tu contraseña de admin"
-              autoComplete="current-password"
-              required
-            />
-          </label>
-        </div>
+      <Stack component="form" onSubmit={handleSubmit} spacing={2}>
+        <TextField
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="admin@hardpoint.com"
+          autoComplete="email"
+          required
+        />
+        <TextField
+          label="Contraseña"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Tu contraseña de admin"
+          autoComplete="current-password"
+          required
+        />
 
         {feedback ? (
-          <p className={`form-feedback form-feedback-${feedbackType}`}>{feedback}</p>
+          <Alert severity={feedbackType}>{feedback}</Alert>
         ) : null}
 
-        <button className="btn btn-primary" type="submit" disabled={loading}>
+        <Button variant="contained" type="submit" disabled={loading} startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}>
           {loading ? "Ingresando..." : "Ingresar"}
-        </button>
-      </form>
-    </section>
+        </Button>
+      </Stack>
+    </Paper>
   );
 }

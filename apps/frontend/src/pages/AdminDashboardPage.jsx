@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   changeAdminPassword,
@@ -27,7 +26,28 @@ import {
   updatePublication,
   uploadImages
 } from "../services/api";
-
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  IconButton,
+  MenuItem,
+  Paper,
+  Stack,
+  Switch,
+  Tab,
+  Tabs,
+  TextField,
+  Typography
+} from "@mui/material";
 const initialPubForm = {
   name: "",
   category_id: "",
@@ -51,11 +71,15 @@ const initialCommerceProfile = {
   business_hours: ""
 };
 
+function formatAvailabilityLabel(value) {
+  const label = value?.replaceAll("_", " ") || "";
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(getStoredAdminProfile());
   const [activeTab, setActiveTab] = useState("publications");
-  const [isTabsMenuOpen, setIsTabsMenuOpen] = useState(false);
 
   const [publications, setPublications] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -726,246 +750,232 @@ export default function AdminDashboardPage() {
   }
 
   const adminTabs = [
-    { key: "publications", label: `Productos (${publications.length})` },
-    { key: "categories", label: `Categorías (${categories.length})` },
-    { key: "inquiries", label: `Consultas (${inquiries.length})` },
+    { key: "publications", label: "Productos" },
+    { key: "categories", label: "Categorías" },
+    { key: "inquiries", label: "Consultas" },
     { key: "admins", label: "Administradores" },
     { key: "commerce", label: "Comercio" }
   ];
 
   return (
-    <section className="admin-page-wide">
-      {loading ? <p>Cargando panel...</p> : null}
-      {error ? <p className="form-feedback form-feedback-error">{error}</p> : null}
+    <Box component="section" className="admin-page-wide">
+      {loading ? (
+        <Box className="admin-loading-state">
+          <CircularProgress size={22} />
+          <Typography color="text.secondary">Cargando panel...</Typography>
+        </Box>
+      ) : null}
+      {error ? <Alert severity="error" variant="outlined" sx={{ mb: 2 }}>{error}</Alert> : null}
 
       {!loading ? (
         <div className="admin-dashboard-layout">
-          <div className="card admin-main-card">
-            <div className="admin-dashboard-header">
-              <div>
-                <p>
-                </p>
-              </div>
-            </div>
+          <Paper className="admin-main-card" elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 2, p: { xs: 1.5, sm: 3 } }}>
+            <Paper
+              className="admin-dashboard-header"
+              elevation={0}
+              sx={{
+                bgcolor: "primary.main",
+                color: "background.paper",
+                width: { xs: "calc(100% + 26px)", sm: "calc(100% + 50px)" },
+                ml: { xs: "-13px", sm: "-25px" },
+                mr: { xs: "-13px", sm: "-25px" },
+                mt: { xs: "-13px", sm: "-25px" },
+                mb: 0,
+                borderRadius: "15px 15px 0 0",
+                px: { xs: 1.5, sm: 2.5 },
+                py: { xs: 1.5, sm: 2 }
+              }}
+            >
+              <Typography component="h1" variant="h4" color="inherit" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
+                Panel administrador
+              </Typography>
+            </Paper>
 
-            <div className="admin-tabs admin-tabs-desktop">
+            <Tabs
+              className="admin-tabs"
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="Secciones del panel administrador"
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                mt: 1.25,
+                mb: 3,
+                borderBottom: "1px solid var(--border-subtle)",
+                "& .MuiTab-root": {
+                  fontSize: "0.94rem"
+                },
+                "& .MuiTabs-indicator": { height: 3, borderRadius: "3px 3px 0 0" }
+              }}
+            >
               {adminTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  className={`admin-tab-btn ${activeTab === tab.key ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab.key)}
-                >
-                  {tab.label}
-                </button>
+                <Tab key={tab.key} value={tab.key} label={tab.label} />
               ))}
-            </div>
-
-            <div className="admin-tabs-mobile">
-              <button
-                type="button"
-                className="admin-tabs-mobile-trigger"
-                aria-expanded={isTabsMenuOpen}
-                onClick={() => setIsTabsMenuOpen((prev) => !prev)}
+            </Tabs>
+            <Box sx={{ display: { xs: "block", sm: "none" }, mt: 1.25, mb: 2.5 }}>
+              <TextField
+                select
+                label="Sección del panel"
+                value={activeTab}
+                onChange={(event) => setActiveTab(event.target.value)}
               >
-                <span>{adminTabs.find((tab) => tab.key === activeTab)?.label}</span>
-                <svg
-                  className={`admin-tabs-mobile-icon ${isTabsMenuOpen ? "open" : ""}`}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-
-              {isTabsMenuOpen ? (
-                <div className="admin-tabs-mobile-menu">
-                  {adminTabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      className={`admin-tabs-mobile-option ${activeTab === tab.key ? "active" : ""}`}
-                      onClick={() => {
-                        setActiveTab(tab.key);
-                        setIsTabsMenuOpen(false);
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+                {adminTabs.map((tab) => (
+                  <MenuItem key={tab.key} value={tab.key}>{tab.label}</MenuItem>
+                ))}
+              </TextField>
+            </Box>
 
             {pubFeedback ? (
-              <p className={`form-feedback form-feedback-${pubFeedbackType}`}>{pubFeedback}</p>
+              <Alert severity={pubFeedbackType} sx={{ mb: 2 }}>{pubFeedback}</Alert>
             ) : null}
 
             {activeTab === "publications" ? (
               <div className="admin-tab-content">
                 <div className="admin-section-header">
-                  <h3>Publicaciones de Productos</h3>
+                  <Box>
+                    <Typography component="h2" variant="h5" fontWeight={800}>Productos</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 0.35 }}>
+                      Administrá publicaciones, imágenes, precios y disponibilidad del catálogo.
+                    </Typography>
+                  </Box>
                   {!showPubForm ? (
-                    <button className="btn btn-primary" onClick={handleOpenCreatePub}>
-                      + Nuevo Producto
-                    </button>
+                    <Button variant="contained" onClick={handleOpenCreatePub}>Nuevo producto</Button>
                   ) : null}
                 </div>
 
-                {showPubForm ? createPortal(
-                  <div className="modal-overlay" onClick={handleCancelPubForm}>
-                  <article className="publication-form-card modal-content" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className="modal-close-btn" onClick={handleCancelPubForm} aria-label="Cerrar">✕</button>
-                    <h4>{editingPubId ? "Editar Producto" : "Nuevo Producto"}</h4>
+                {showPubForm ? (
+                  <Dialog open onClose={handleCancelPubForm} fullWidth maxWidth="md" scroll="paper">
+                    <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+                      {editingPubId ? "Editar producto" : "Nuevo producto"}
+                      <IconButton onClick={handleCancelPubForm} aria-label="Cerrar diálogo">×</IconButton>
+                    </DialogTitle>
+                    <DialogContent dividers>
                     <form onSubmit={handleSavePublication}>
                       <div className="form-grid">
-                        <label className="form-field">
-                          <span>Nombre *</span>
-                          <input
-                            type="text"
-                            value={pubForm.name}
-                            onChange={(e) => setPubForm({ ...pubForm, name: e.target.value })}
-                            placeholder="Ej: RTX 4060 Ti 8GB"
-                            required
-                          />
-                        </label>
+                        <TextField
+                          label="Nombre"
+                          value={pubForm.name}
+                          onChange={(e) => setPubForm({ ...pubForm, name: e.target.value })}
+                          placeholder="Ej: RTX 4060 Ti 8GB"
+                          required
+                        />
 
-                        <label className="form-field">
-                          <span>Categoría *</span>
-                          <select
-                            value={pubForm.category_id}
-                            onChange={(e) => setPubForm({ ...pubForm, category_id: e.target.value })}
-                            required
-                          >
-                            <option value="">Seleccionar categoría...</option>
-                            {categories.map((cat) => (
-                              <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                        <TextField
+                          select
+                          label="Categoría"
+                          value={pubForm.category_id}
+                          onChange={(e) => setPubForm({ ...pubForm, category_id: e.target.value })}
+                          required
+                        >
+                          {categories.map((cat) => (
+                            <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                          ))}
+                        </TextField>
 
-                        <label className="form-field">
-                          <span>Marca</span>
-                          <input
-                            type="text"
-                            value={pubForm.brand}
-                            onChange={(e) => setPubForm({ ...pubForm, brand: e.target.value })}
-                            placeholder="Ej: Asus, Corsair..."
-                          />
-                        </label>
+                        <TextField
+                          label="Marca"
+                          value={pubForm.brand}
+                          onChange={(e) => setPubForm({ ...pubForm, brand: e.target.value })}
+                          placeholder="Ej: Asus, Corsair..."
+                        />
 
-                        <label className="form-field">
-                          <span>SKU</span>
-                          <input
-                            type="text"
-                            value={pubForm.sku}
-                            onChange={(e) => setPubForm({ ...pubForm, sku: e.target.value })}
-                            placeholder="Ej: GPU-ASUS-4060"
-                          />
-                        </label>
+                        <TextField
+                          label="SKU"
+                          value={pubForm.sku}
+                          onChange={(e) => setPubForm({ ...pubForm, sku: e.target.value })}
+                          placeholder="Ej: GPU-ASUS-4060"
+                        />
 
-                        <label className="form-field">
-                          <span>Precio (ARS)</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={pubForm.price}
-                            onChange={(e) => setPubForm({ ...pubForm, price: e.target.value })}
-                            placeholder="Ej: 450000"
-                          />
-                        </label>
+                        <TextField
+                          label="Precio (ARS)"
+                          type="number"
+                          inputProps={{ min: 0, step: "0.01" }}
+                          value={pubForm.price}
+                          onChange={(e) => setPubForm({ ...pubForm, price: e.target.value })}
+                          placeholder="Ej: 450000"
+                        />
 
-                        <label className="form-field">
-                          <span>Disponibilidad</span>
-                          <select
-                            value={pubForm.availability_status}
-                            onChange={(e) =>
-                              setPubForm({ ...pubForm, availability_status: e.target.value })
-                            }
-                          >
-                            <option value="disponible">Disponible</option>
-                            <option value="sin_stock">Sin stock</option>
-                            <option value="pausado">Pausado</option>
-                          </select>
-                        </label>
+                        <TextField
+                          select
+                          label="Disponibilidad"
+                          value={pubForm.availability_status}
+                          onChange={(e) => setPubForm({ ...pubForm, availability_status: e.target.value })}
+                        >
+                          <MenuItem value="disponible">Disponible</MenuItem>
+                          <MenuItem value="sin_stock">Sin stock</MenuItem>
+                          <MenuItem value="pausado">Pausado</MenuItem>
+                        </TextField>
 
-                        <div className="form-field form-field-full image-manager-section">
+                        <div className="form-field-full image-manager-section">
                           <div className="image-manager-header">
                             <div>
-                              <span className="image-manager-title">Galería de Imágenes</span>
-                              <p className="image-manager-subtitle">
+                              <Typography className="image-manager-title">Galería de imágenes</Typography>
+                              <Typography variant="body2" color="text.secondary" className="image-manager-subtitle">
                                 Sube imágenes desde tu computadora a Supabase Storage o agrega URLs directas.
-                              </p>
+                              </Typography>
                             </div>
-                            <span className="image-count-badge">
-                              {pubForm.images.length} {pubForm.images.length === 1 ? "imagen" : "imágenes"}
-                            </span>
+                            <Chip
+                              className="image-count-badge"
+                              label={`${pubForm.images.length} ${pubForm.images.length === 1 ? "imagen" : "imágenes"}`}
+                              size="small"
+                              variant="outlined"
+                            />
                           </div>
 
                           <div className="image-upload-zone">
-                            <label className={`image-upload-dropzone ${uploadingImages ? "uploading" : ""}`}>
+                            <Button
+                              component="label"
+                              variant="outlined"
+                              className={`image-upload-dropzone ${uploadingImages ? "uploading" : ""}`}
+                              disabled={uploadingImages}
+                              sx={{ width: "100%", minHeight: 120, borderStyle: "dashed", textAlign: "center" }}
+                            >
                               <input
+                                hidden
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 onChange={handleImageFilesUpload}
-                                disabled={uploadingImages}
-                                style={{ display: "none" }}
                               />
-                              <div className="image-upload-dropzone-content">
-                                <svg
-                                  width="30"
-                                  height="30"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                  <polyline points="17 8 12 3 7 8" />
-                                  <line x1="12" y1="3" x2="12" y2="15" />
-                                </svg>
-                                <strong>
+                              <Stack spacing={0.5} alignItems="center">
+                                <Typography fontWeight={700}>
                                   {uploadingImages
                                     ? "Subiendo archivos a Supabase Storage..."
                                     : "Haz clic aquí para seleccionar imágenes de tu PC"}
-                                </strong>
-                                <small>Formatos admitidos: JPG, PNG, WEBP, GIF (máx. 10MB por archivo)</small>
-                              </div>
-                            </label>
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  JPG, PNG, WEBP o GIF. Máximo 10 MB por archivo.
+                                </Typography>
+                              </Stack>
+                            </Button>
                           </div>
 
                           {imageUploadFeedback ? (
-                            <p className="form-feedback form-feedback-info" style={{ marginTop: "0.5rem" }}>
+                            <Alert severity="info" sx={{ mt: 1 }}>
                               {imageUploadFeedback}
-                            </p>
+                            </Alert>
                           ) : null}
 
-                          <div className="image-url-add-row">
-                            <input
+                          <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="Agregar imagen por URL"
                               type="url"
                               value={customImageUrl}
                               onChange={(e) => setCustomImageUrl(e.target.value)}
-                              placeholder="O pega una URL externa (https://...)"
+                              placeholder="https://..."
                             />
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-sm"
+                            <Button
+                              variant="outlined"
                               onClick={handleAddCustomUrlImage}
                               disabled={!customImageUrl.trim()}
+                              sx={{ whiteSpace: "nowrap" }}
                             >
-                              + Agregar URL
-                            </button>
-                          </div>
+                              Agregar URL
+                            </Button>
+                          </Stack>
 
                           {pubForm.images.length > 0 ? (
                             <div className="images-preview-grid">
@@ -977,94 +987,86 @@ export default function AdminDashboardPage() {
                                   <div className="image-preview-thumb-wrap">
                                     <img src={img.image_url} alt={`Preview ${index + 1}`} />
                                     {img.is_cover ? (
-                                      <span className="cover-badge">★ Portada</span>
+                                      <Chip className="cover-badge" label="Portada" size="small" color="primary" />
                                     ) : null}
                                   </div>
 
                                   <div className="image-preview-card-actions">
                                     {!img.is_cover ? (
-                                      <button
-                                        type="button"
-                                        className="btn-set-cover"
+                                      <Button
+                                        size="small"
+                                        variant="text"
                                         onClick={() => handleSetCoverImage(index)}
                                         title="Establecer como imagen de portada"
                                       >
-                                        Hacer Portada
-                                      </button>
+                                        Hacer portada
+                                      </Button>
                                     ) : (
-                                      <span className="cover-text-label">Principal</span>
+                                      <Chip className="cover-text-label" label="Principal" size="small" color="primary" />
                                     )}
 
-                                    <button
-                                      type="button"
-                                      className="btn-remove-image"
+                                    <Button
+                                      size="small"
+                                      color="error"
+                                      variant="text"
                                       onClick={() => handleRemoveImage(index)}
                                       title="Quitar esta imagen"
                                     >
-                                      ✕ Quitar
-                                    </button>
+                                      Quitar
+                                    </Button>
                                   </div>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="no-images-hint">
+                            <Typography className="no-images-hint" color="text.secondary">
                               No hay imágenes agregadas aún para este producto.
-                            </p>
+                            </Typography>
                           )}
                         </div>
 
-                        <label className="form-field form-field-full">
-                          <span>Descripción *</span>
-                          <textarea
-                            rows="3"
-                            value={pubForm.description}
-                            onChange={(e) => setPubForm({ ...pubForm, description: e.target.value })}
-                            placeholder="Especificaciones técnicas del producto..."
-                            required
-                          />
-                        </label>
+                        <TextField
+                          className="form-field-full"
+                          label="Descripción"
+                          multiline
+                          minRows={3}
+                          value={pubForm.description}
+                          onChange={(e) => setPubForm({ ...pubForm, description: e.target.value })}
+                          placeholder="Especificaciones técnicas del producto..."
+                          required
+                        />
 
                         <div className="form-checkboxes-row">
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              checked={pubForm.is_price_visible}
-                              onChange={(e) => setPubForm({ ...pubForm, is_price_visible: e.target.checked })}
-                            />
-                            <span>Mostrar precio públicamente</span>
-                          </label>
+                          <FormControlLabel
+                            control={<Switch checked={pubForm.is_price_visible} onChange={(e) => setPubForm({ ...pubForm, is_price_visible: e.target.checked })} />}
+                            label="Mostrar precio públicamente"
+                          />
 
                           {editingPubId ? (
-                            <label className="checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={pubForm.is_active}
-                                onChange={(e) => setPubForm({ ...pubForm, is_active: e.target.checked })}
-                              />
-                              <span>Producto activo en catálogo</span>
-                            </label>
+                            <FormControlLabel
+                              control={<Switch checked={pubForm.is_active} onChange={(e) => setPubForm({ ...pubForm, is_active: e.target.checked })} />}
+                              label="Producto activo en catálogo"
+                            />
                           ) : null}
                         </div>
 
                       </div>
 
                       <div className="form-actions-bar">
-                        <button className="btn btn-primary" type="submit" disabled={pubSubmitting}>
+                        <Button variant="contained" type="submit" disabled={pubSubmitting}>
                           {pubSubmitting ? "Guardando..." : editingPubId ? "Guardar Cambios" : "Crear Producto"}
-                        </button>
-                        <button className="btn btn-ghost" type="button" onClick={handleCancelPubForm}>
+                        </Button>
+                        <Button variant="outlined" type="button" onClick={handleCancelPubForm}>
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     </form>
-                  </article>
-                  </div>,
-                  document.body
+                    </DialogContent>
+                  </Dialog>
                 ) : null}
 
                 {publications.length === 0 ? (
-                  <p>No hay publicaciones registradas.</p>
+                  <Alert severity="info">No hay publicaciones registradas.</Alert>
                 ) : (
                   <div className="catalog-grid admin-products-grid">
                     {publications.map((pub) => {
@@ -1072,9 +1074,17 @@ export default function AdminDashboardPage() {
                         || pub.publication_images?.[0]?.image_url;
 
                       return (
-                        <article
+                        <Card
                           key={pub.id}
                           className={`card publication-card admin-product-card ${!pub.is_active ? "is-inactive" : ""}`}
+                          component="article"
+                          variant="outlined"
+                          elevation={0}
+                          sx={{
+                            display: "grid",
+                            minWidth: 0,
+                            gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(190px, 42%) minmax(0, 1fr)" }
+                          }}
                         >
                           <div className="publication-media">
                             {cover ? (
@@ -1083,39 +1093,49 @@ export default function AdminDashboardPage() {
                               <div className="publication-image-placeholder">Sin imagen</div>
                             )}
                           </div>
-                          <div className="publication-body">
-                            <h3>{pub.name}</h3>
+                          <CardContent className="publication-body" sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                            <Typography component="h3" variant="h6" fontWeight={750}>
+                              {pub.name}
+                            </Typography>
                             <div className="publication-tags">
-                              {pub.brand ? <span>Marca: {pub.brand}</span> : null}
-                              <span>{pub.categories?.name || "Sin categoría"}</span>
+                              {pub.brand ? <Chip size="small" label={pub.brand} variant="outlined" /> : null}
+                              <Chip size="small" label={pub.categories?.name || "Sin categoría"} />
                             </div>
                             <div className="publication-meta">
-                              <strong>{pub.is_price_visible ? formatPrice(pub.price) : "Precio oculto"}</strong>
-                              <span className={`status-badge status-${pub.availability_status}`}>
-                                {pub.availability_status}
-                              </span>
+                              <Typography component="strong" fontWeight={800}>
+                                {pub.is_price_visible ? formatPrice(pub.price) : "Precio oculto"}
+                              </Typography>
+                              <Chip
+                                size="small"
+                                label={formatAvailabilityLabel(pub.availability_status)}
+                                color={pub.availability_status === "disponible" ? "success" : pub.availability_status === "sin_stock" ? "error" : "warning"}
+                                variant="outlined"
+                              />
                             </div>
                             <div className="admin-product-footer">
-                              <small>{pub.is_active ? "Activo" : "Inactivo"}</small>
+                              <Chip size="small" label={pub.is_active ? "Activo" : "Inactivo"} color={pub.is_active ? "success" : "default"} />
                               <div className="admin-actions">
-                                <button
-                                  className="btn btn-ghost btn-sm"
+                                <Button
+                                  size="small"
+                                  variant="outlined"
                                   onClick={() => handleOpenEditPub(pub)}
                                 >
                                   Editar
-                                </button>
+                                </Button>
                                 {pub.is_active ? (
-                                  <button
-                                    className="btn btn-danger btn-sm"
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="error"
                                     onClick={() => handleDeletePublication(pub.id)}
                                   >
                                     Eliminar
-                                  </button>
+                                  </Button>
                                 ) : null}
                               </div>
                             </div>
-                          </div>
-                        </article>
+                          </CardContent>
+                        </Card>
                       );
                     })}
                   </div>
@@ -1127,148 +1147,156 @@ export default function AdminDashboardPage() {
               <div className="admin-tab-content admin-categories-tab">
                 <div className="admin-section-header">
                   <div>
-                    <h3>Categorías</h3>
-                    <p>Organizá los productos del catálogo por categoría.</p>
+                    <Typography component="h2" variant="h5" fontWeight={800}>Categorías</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 0.35 }}>
+                      Organizá los productos del catálogo por categoría.
+                    </Typography>
                   </div>
-                  <button className="btn btn-primary" type="button" onClick={handleOpenCreateCategory}>
-                    + Nueva categoría
-                  </button>
+                  <Button variant="contained" onClick={handleOpenCreateCategory}>Nueva categoría</Button>
                 </div>
 
                 {categoryFeedback ? (
-                  <p className={`form-feedback form-feedback-${categoryFeedbackType}`}>{categoryFeedback}</p>
+                  <Alert severity={categoryFeedbackType} sx={{ mb: 2 }}>{categoryFeedback}</Alert>
                 ) : null}
 
                 {categories.length === 0 ? (
-                  <p>No hay categorías registradas.</p>
+                  <Alert severity="info">No hay categorías registradas.</Alert>
                 ) : (
                   <div className="category-management-list">
                     {categories.map((category) => (
-                      <article className="category-management-item" key={category.id}>
+                      <Paper className="category-management-item" component="article" variant="outlined" key={category.id}>
                         <div>
-                          <strong>{category.name}</strong>
-                          {category.description ? <p>{category.description}</p> : null}
+                          <Typography fontWeight={750}>{category.name}</Typography>
+                          {category.description ? (
+                            <Typography variant="body2" color="text.secondary">{category.description}</Typography>
+                          ) : null}
                         </div>
                         <div className="admin-actions">
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            type="button"
+                          <Button
+                            size="small"
+                            variant="outlined"
                             onClick={() => handleOpenEditCategory(category)}
                           >
                             Editar
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            type="button"
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
                             onClick={() => handleDeleteCategory(category)}
                           >
                             Eliminar
-                          </button>
+                          </Button>
                         </div>
-                      </article>
+                      </Paper>
                     ))}
                   </div>
                 )}
               </div>
             ) : null}
 
-            {showCategoryForm ? createPortal(
-              <div className="modal-overlay" onClick={handleCancelCategoryForm}>
-                <article className="publication-form-card modal-content modal-content-sm" onClick={(e) => e.stopPropagation()}>
-                  <button type="button" className="modal-close-btn" onClick={handleCancelCategoryForm} aria-label="Cerrar">✕</button>
-                  <h4>{editingCategoryId ? "Editar Categoría" : "Nueva Categoría"}</h4>
+            {showCategoryForm ? (
+              <Dialog open onClose={handleCancelCategoryForm} fullWidth maxWidth="sm">
+                <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
+                  {editingCategoryId ? "Editar categoría" : "Nueva categoría"}
+                  <IconButton onClick={handleCancelCategoryForm} aria-label="Cerrar diálogo">×</IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
                   <form onSubmit={handleSaveCategory}>
-                    <div className="form-grid">
-                      <label className="form-field form-field-full">
-                        <span>Nombre *</span>
-                        <input
-                          type="text"
-                          value={categoryForm.name}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                          placeholder="Ej: Placas de video"
-                          required
-                        />
-                      </label>
-                      <label className="form-field form-field-full">
-                        <span>Descripción</span>
-                        <textarea
-                          rows="2"
-                          value={categoryForm.description}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                          placeholder="Descripción opcional de la categoría"
-                        />
-                      </label>
-                    </div>
+                    <Stack spacing={2} sx={{ pt: 1 }}>
+                      <TextField
+                        label="Nombre"
+                        value={categoryForm.name}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                        placeholder="Ej: Placas de video"
+                        required
+                      />
+                      <TextField
+                        label="Descripción"
+                        multiline
+                        minRows={2}
+                        value={categoryForm.description}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                        placeholder="Descripción opcional de la categoría"
+                      />
 
                     {categoryFeedback ? (
-                      <p className={`form-feedback form-feedback-${categoryFeedbackType}`}>{categoryFeedback}</p>
+                      <Alert severity={categoryFeedbackType}>{categoryFeedback}</Alert>
                     ) : null}
 
-                    <div className="form-actions-bar">
-                      <button className="btn btn-primary" type="submit" disabled={categorySubmitting}>
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <Button variant="outlined" type="button" onClick={handleCancelCategoryForm}>
+                        Cancelar
+                      </Button>
+                      <Button variant="contained" type="submit" disabled={categorySubmitting}>
                         {categorySubmitting
                           ? "Guardando..."
                           : editingCategoryId
                             ? "Guardar cambios"
                             : "Crear Categoría"}
-                      </button>
-                      <button className="btn btn-ghost" type="button" onClick={handleCancelCategoryForm}>
-                        Cancelar
-                      </button>
-                    </div>
+                      </Button>
+                    </Stack>
+                    </Stack>
                   </form>
-                </article>
-              </div>,
-              document.body
+                </DialogContent>
+              </Dialog>
             ) : null}
 
             {/* TAB 2: CONSULTAS CON CAMBIO DE ESTADO */}
             {activeTab === "inquiries" ? (
               <div className="admin-tab-content">
-                <h3>Consultas Recibidas</h3>
-                {inquiryFeedback ? <p className="form-feedback form-feedback-success">{inquiryFeedback}</p> : null}
-                {inquiries.length === 0 ? <p>No hay consultas registradas.</p> : null}
+                <div className="admin-section-header">
+                  <Box>
+                    <Typography component="h2" variant="h5" fontWeight={800}>Consultas recibidas</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 0.35 }}>
+                      Revisá los mensajes de clientes y actualizá su estado de seguimiento.
+                    </Typography>
+                  </Box>
+                  <Chip label={`${inquiries.length} en total`} variant="outlined" />
+                </div>
+                {inquiryFeedback ? <Alert severity="success" sx={{ mb: 2 }}>{inquiryFeedback}</Alert> : null}
+                {inquiries.length === 0 ? <Alert severity="info">No hay consultas registradas.</Alert> : null}
 
                 <div className="inquiries-grid">
                   {inquiries.map((inquiry) => (
-                    <article key={inquiry.id} className="admin-inquiry-card">
+                    <Paper key={inquiry.id} component="article" variant="outlined" className="admin-inquiry-card">
                       <div className="admin-inquiry-header">
                         <div className="admin-inquiry-info">
-                          <strong>{inquiry.full_name}</strong>
-                          <p>{inquiry.email} {inquiry.phone ? `| Tel: ${inquiry.phone}` : ""}</p>
+                          <Typography fontWeight={750}>{inquiry.full_name}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {inquiry.email} {inquiry.phone ? `| Tel: ${inquiry.phone}` : ""}
+                          </Typography>
                         </div>
 
-                        {/* SELECTOR DE ESTADO DE CONSULTA */}
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <label htmlFor={`inquiry-status-${inquiry.id}`} style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                            Estado:
-                          </label>
-                          <select
-                            id={`inquiry-status-${inquiry.id}`}
-                            className={`inquiry-status-select status-${inquiry.status}`}
+                          <TextField
+                            select
+                            size="small"
+                            label="Estado"
                             value={inquiry.status}
                             disabled={updatingInquiryId === inquiry.id}
                             onChange={(e) => handleChangeInquiryStatus(inquiry.id, e.target.value)}
                           >
-                            <option value="pendiente">Pendiente</option>
-                            <option value="leida">Leída</option>
-                            <option value="respondida">Respondida</option>
-                          </select>
+                            <MenuItem value="pendiente">Pendiente</MenuItem>
+                            <MenuItem value="leida">Leída</MenuItem>
+                            <MenuItem value="respondida">Respondida</MenuItem>
+                          </TextField>
                         </div>
                       </div>
 
                       <div className="admin-inquiry-body">
-                        <p><strong>Asunto:</strong> {inquiry.subject}</p>
-                        <p>{inquiry.message}</p>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          type="button"
+                        <Typography><strong>Asunto:</strong> {inquiry.subject}</Typography>
+                        <Typography color="text.secondary">{inquiry.message}</Typography>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
                           onClick={() => handleDeleteInquiry(inquiry.id)}
                         >
                           Eliminar consulta
-                        </button>
+                        </Button>
                       </div>
-                    </article>
+                    </Paper>
                   ))}
                 </div>
               </div>
@@ -1276,397 +1304,276 @@ export default function AdminDashboardPage() {
 
             {activeTab === "admins" ? (
               <div className="admin-tab-content admin-admins-tab">
-                <h3>Mis datos personales</h3>
-
-                {isLocalAdmin ? (
-                  <p className="form-feedback form-feedback-info">
-                    Iniciaste sesión con el administrador local definido por variables de entorno. Para editar tus datos o tu contraseña, usa un administrador registrado en la base de datos.
-                  </p>
-                ) : (
-                  <>
-                    <form className="admin-create-form" onSubmit={handleSaveAdminProfile}>
-                      <div className="form-grid">
-                        <label className="form-field">
-                          <span>Nombre *</span>
-                          <input
-                            type="text"
+                <Box className="admin-admins-grid">
+                  <Paper className="admin-management-section" variant="outlined">
+                    <Typography component="h2" variant="h6" fontWeight={750}>Perfil del administrador</Typography>
+                    {isLocalAdmin ? (
+                      <Alert severity="info">
+                        Iniciaste sesión con el administrador local definido por variables de entorno. Para editar tus datos, usa una cuenta registrada en la base de datos.
+                      </Alert>
+                    ) : (
+                      <form className="admin-create-form" onSubmit={handleSaveAdminProfile}>
+                        <div className="form-grid">
+                          <TextField
+                            label="Nombre"
                             value={adminProfileForm.firstName}
-                            onChange={(e) =>
-                              setAdminProfileForm((prev) => ({ ...prev, firstName: e.target.value }))
-                            }
+                            onChange={(e) => setAdminProfileForm((prev) => ({ ...prev, firstName: e.target.value }))}
                             required
                           />
-                        </label>
-
-                        <label className="form-field">
-                          <span>Apellido *</span>
-                          <input
-                            type="text"
+                          <TextField
+                            label="Apellido"
                             value={adminProfileForm.lastName}
-                            onChange={(e) =>
-                              setAdminProfileForm((prev) => ({ ...prev, lastName: e.target.value }))
-                            }
+                            onChange={(e) => setAdminProfileForm((prev) => ({ ...prev, lastName: e.target.value }))}
                             required
                           />
-                        </label>
-
-                        <label className="form-field">
-                          <span>Email *</span>
-                          <input
+                          <TextField
+                            label="Correo electrónico"
                             type="email"
                             value={adminProfileForm.email}
-                            onChange={(e) =>
-                              setAdminProfileForm((prev) => ({ ...prev, email: e.target.value }))
-                            }
+                            onChange={(e) => setAdminProfileForm((prev) => ({ ...prev, email: e.target.value }))}
                             required
                           />
-                        </label>
-
-                        <label className="form-field">
-                          <span>Teléfono</span>
-                          <input
+                          <TextField
+                            label="Teléfono"
                             type="tel"
                             value={adminProfileForm.phone}
-                            onChange={(e) =>
-                              setAdminProfileForm((prev) => ({ ...prev, phone: e.target.value }))
-                            }
+                            onChange={(e) => setAdminProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
                             placeholder="Opcional"
                           />
-                        </label>
-                      </div>
+                        </div>
+                        {adminProfileFeedback ? <Alert severity={adminProfileFeedbackType}>{adminProfileFeedback}</Alert> : null}
+                        <Button variant="contained" type="submit" disabled={adminProfileSaving}>
+                          {adminProfileSaving ? "Guardando..." : "Guardar mis datos"}
+                        </Button>
+                      </form>
+                    )}
+                  </Paper>
 
-                      {adminProfileFeedback ? (
-                        <p className={`form-feedback form-feedback-${adminProfileFeedbackType}`}>
-                          {adminProfileFeedback}
-                        </p>
-                      ) : null}
-
-                      <button className="btn btn-primary" type="submit" disabled={adminProfileSaving}>
-                        {adminProfileSaving ? "Guardando..." : "Guardar mis datos"}
-                      </button>
-                    </form>
-
-                    <h3 className="admin-section-subtitle">Cambiar mi contraseña</h3>
-
-                    <form className="admin-create-form" onSubmit={handleChangePassword}>
-                      <div className="form-grid">
-                        <label className="form-field form-field-full">
-                          <span>Contraseña actual *</span>
-                          <input
+                  <Paper className="admin-management-section" variant="outlined">
+                    <Typography component="h2" variant="h6" fontWeight={750}>Seguridad de la cuenta</Typography>
+                    {isLocalAdmin ? (
+                      <Alert severity="info">
+                        El administrador local no puede cambiar su contraseña desde el panel.
+                      </Alert>
+                    ) : (
+                      <form className="admin-create-form" onSubmit={handleChangePassword}>
+                        <div className="form-grid">
+                          <TextField
+                            className="form-field-full"
+                            label="Contraseña actual"
                             type="password"
                             value={passwordForm.currentPassword}
-                            onChange={(e) =>
-                              setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))
-                            }
-                            placeholder="••••••••"
+                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
                             required
                           />
-                        </label>
-
-                        <label className="form-field">
-                          <span>Nueva contraseña *</span>
-                          <input
+                          <TextField
+                            label="Nueva contraseña"
                             type="password"
                             value={passwordForm.newPassword}
-                            onChange={(e) =>
-                              setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))
-                            }
-                            placeholder="Mínimo 6 caracteres"
+                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                            helperText="Mínimo 6 caracteres"
                             required
                           />
-                        </label>
-
-                        <label className="form-field">
-                          <span>Confirmar nueva contraseña *</span>
-                          <input
+                          <TextField
+                            label="Confirmar nueva contraseña"
                             type="password"
                             value={passwordForm.confirmPassword}
-                            onChange={(e) =>
-                              setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
-                            }
-                            placeholder="Repite la nueva contraseña"
+                            onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                             required
                           />
-                        </label>
+                        </div>
+                        {passwordFeedback ? <Alert severity={passwordFeedbackType}>{passwordFeedback}</Alert> : null}
+                        <Button variant="contained" type="submit" disabled={passwordSaving}>
+                          {passwordSaving ? "Actualizando..." : "Actualizar contraseña"}
+                        </Button>
+                      </form>
+                    )}
+                  </Paper>
+
+                  <Paper className="admin-management-section" variant="outlined">
+                    <Typography component="h2" variant="h6" fontWeight={750}>Administradores registrados</Typography>
+                    {adminsList.length === 0 ? (
+                      <Alert severity="info">No hay administradores registrados en la base de datos.</Alert>
+                    ) : (
+                      <Stack className="admin-admins-list">
+                        {adminsList.map((item) => (
+                          <Box className="admin-admin-list-row" component="article" key={item.id}>
+                            <Box>
+                              <Typography fontWeight={750}>
+                                {item.first_name} {item.last_name}{admin?.id === item.id ? " (vos)" : ""}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {item.email}{item.phone ? ` · ${item.phone}` : ""}
+                              </Typography>
+                            </Box>
+                            <Box className="admin-admin-list-actions">
+                              {resetTargetId === item.id ? (
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
+                                  <TextField
+                                    type="password"
+                                    size="small"
+                                    label="Nueva contraseña"
+                                    value={resetPasswordValue}
+                                    onChange={(e) => setResetPasswordValue(e.target.value)}
+                                  />
+                                  <Button size="small" variant="contained" disabled={resetSaving} onClick={() => handleResetAdminPassword(item.id)}>
+                                    {resetSaving ? "Guardando..." : "Guardar"}
+                                  </Button>
+                                  <Button size="small" variant="text" onClick={() => { setResetTargetId(null); setResetPasswordValue(""); }}>
+                                    Cancelar
+                                  </Button>
+                                </Stack>
+                              ) : (
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => { setResetTargetId(item.id); setResetPasswordValue(""); setResetFeedback(""); }}
+                                >
+                                  Restablecer contraseña
+                                </Button>
+                              )}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    )}
+                    {resetFeedback ? <Alert severity={resetFeedbackType}>{resetFeedback}</Alert> : null}
+                  </Paper>
+
+                  <Paper className="admin-management-section" variant="outlined">
+                    <Typography component="h2" variant="h6" fontWeight={750}>Registrar administrador</Typography>
+                    <form className="admin-create-form" onSubmit={handleCreateAdmin}>
+                      <div className="form-grid">
+                        <TextField
+                          label="Nombre"
+                          value={newAdmin.firstName}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, firstName: e.target.value }))}
+                          required
+                        />
+                        <TextField
+                          label="Apellido"
+                          value={newAdmin.lastName}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, lastName: e.target.value }))}
+                          required
+                        />
+                        <TextField
+                          className="form-field-full"
+                          label="Correo electrónico"
+                          type="email"
+                          value={newAdmin.email}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, email: e.target.value }))}
+                          required
+                        />
+                        <TextField
+                          className="form-field-full"
+                          label="Teléfono"
+                          type="tel"
+                          value={newAdmin.phone}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, phone: e.target.value }))}
+                          placeholder="Opcional"
+                        />
+                        <TextField
+                          className="form-field-full"
+                          label="Contraseña"
+                          type="password"
+                          value={newAdmin.password}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, password: e.target.value }))}
+                          required
+                        />
                       </div>
-
-                      {passwordFeedback ? (
-                        <p className={`form-feedback form-feedback-${passwordFeedbackType}`}>
-                          {passwordFeedback}
-                        </p>
-                      ) : null}
-
-                      <button className="btn btn-primary" type="submit" disabled={passwordSaving}>
-                        {passwordSaving ? "Actualizando..." : "Actualizar contraseña"}
-                      </button>
+                      {createFeedback ? <Alert severity={createFeedbackType}>{createFeedback}</Alert> : null}
+                      <Button variant="contained" type="submit" disabled={createLoading}>
+                        {createLoading ? "Creando..." : "Crear administrador"}
+                      </Button>
                     </form>
-                  </>
-                )}
-
-                <h3 className="admin-section-subtitle">Administradores registrados</h3>
-
-                {adminsList.length === 0 ? (
-                  <p className="form-feedback form-feedback-info">No hay administradores registrados en la base de datos.</p>
-                ) : (
-                  <div className="category-management-list">
-                    {adminsList.map((item) => (
-                      <article className="category-management-item" key={item.id}>
-                        <div>
-                          <strong>
-                            {item.first_name} {item.last_name}
-                            {admin?.id === item.id ? " (vos)" : ""}
-                          </strong>
-                          <p>
-                            {item.email}
-                            {item.phone ? ` · ${item.phone}` : ""}
-                          </p>
-                        </div>
-                        <div className="admin-actions">
-                          {resetTargetId === item.id ? (
-                            <div className="image-url-add-row">
-                              <input
-                                type="password"
-                                value={resetPasswordValue}
-                                onChange={(e) => setResetPasswordValue(e.target.value)}
-                                placeholder="Nueva contraseña"
-                              />
-                              <button
-                                className="btn btn-primary btn-sm"
-                                type="button"
-                                disabled={resetSaving}
-                                onClick={() => handleResetAdminPassword(item.id)}
-                              >
-                                {resetSaving ? "Guardando..." : "Guardar"}
-                              </button>
-                              <button
-                                className="btn btn-ghost btn-sm"
-                                type="button"
-                                onClick={() => {
-                                  setResetTargetId(null);
-                                  setResetPasswordValue("");
-                                }}
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              className="btn btn-ghost btn-sm"
-                              type="button"
-                              onClick={() => {
-                                setResetTargetId(item.id);
-                                setResetPasswordValue("");
-                                setResetFeedback("");
-                              }}
-                            >
-                              Restablecer contraseña
-                            </button>
-                          )}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-
-                {resetFeedback ? (
-                  <p className={`form-feedback form-feedback-${resetFeedbackType}`}>{resetFeedback}</p>
-                ) : null}
-
-                <h3 className="admin-section-subtitle">Registrar administrador</h3>
-
-                <form className="admin-create-form" onSubmit={handleCreateAdmin}>
-                  <div className="form-grid">
-                    <label className="form-field">
-                      <span>Nombre *</span>
-                      <input
-                        type="text"
-                        value={newAdmin.firstName}
-                        onChange={(e) =>
-                          setNewAdmin((prev) => ({ ...prev, firstName: e.target.value }))
-                        }
-                        placeholder="Nombre"
-                        required
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Apellido *</span>
-                      <input
-                        type="text"
-                        value={newAdmin.lastName}
-                        onChange={(e) =>
-                          setNewAdmin((prev) => ({ ...prev, lastName: e.target.value }))
-                        }
-                        placeholder="Apellido"
-                        required
-                      />
-                    </label>
-
-                    <label className="form-field form-field-full">
-                      <span>Email *</span>
-                      <input
-                        type="email"
-                        value={newAdmin.email}
-                        onChange={(e) =>
-                          setNewAdmin((prev) => ({ ...prev, email: e.target.value }))
-                        }
-                        placeholder="admin@ejemplo.com"
-                        required
-                      />
-                    </label>
-
-                    <label className="form-field form-field-full">
-                      <span>Teléfono</span>
-                      <input
-                        type="tel"
-                        value={newAdmin.phone}
-                        onChange={(e) =>
-                          setNewAdmin((prev) => ({ ...prev, phone: e.target.value }))
-                        }
-                        placeholder="Opcional"
-                      />
-                    </label>
-
-                    <label className="form-field form-field-full">
-                      <span>Contraseña *</span>
-                      <input
-                        type="password"
-                        value={newAdmin.password}
-                        onChange={(e) =>
-                          setNewAdmin((prev) => ({ ...prev, password: e.target.value }))
-                        }
-                        placeholder="••••••••"
-                        required
-                      />
-                    </label>
-                  </div>
-
-                  {createFeedback ? (
-                    <p className={`form-feedback form-feedback-${createFeedbackType}`}>
-                      {createFeedback}
-                    </p>
-                  ) : null}
-
-                  <button className="btn btn-primary" type="submit" disabled={createLoading}>
-                    {createLoading ? "Creando..." : "Crear administrador"}
-                  </button>
-                </form>
+                  </Paper>
+                </Box>
               </div>
             ) : null}
 
             {activeTab === "commerce" ? (
               <div className="admin-tab-content admin-commerce-tab">
-                    <h3>Información institucional</h3>
-
+                <div className="admin-section-header">
+                  <div>
+                    <Typography component="h2" variant="h5" fontWeight={800}>Información del comercio</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 0.35 }}>
+                      Estos datos se muestran en las páginas públicas de contacto e información.
+                    </Typography>
+                  </div>
+                </div>
 
                 <form className="commerce-profile-form" onSubmit={handleSaveCommerceProfile}>
                   <div className="form-grid">
-                    <label className="form-field form-field-full">
-                      <span>Nombre del comercio *</span>
-                      <input
-                        type="text"
-                        value={commerceProfile.business_name}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, business_name: event.target.value }))
-                        }
-                        placeholder="Ej: HardPoint Computación"
-                        maxLength="150"
-                        required
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Dirección</span>
-                      <input
-                        type="text"
-                        value={commerceProfile.address}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, address: event.target.value }))
-                        }
-                        placeholder="Dirección del local"
-                        maxLength="200"
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Teléfono</span>
-                      <input
-                        type="tel"
-                        value={commerceProfile.phone}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, phone: event.target.value }))
-                        }
-                        placeholder="+54 11 ..."
-                        maxLength="40"
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Instagram</span>
-                      <input
-                        type="url"
-                        value={commerceProfile.instagram_url}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, instagram_url: event.target.value }))
-                        }
-                        placeholder="https://instagram.com/..."
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Facebook</span>
-                      <input
-                        type="url"
-                        value={commerceProfile.facebook_url}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, facebook_url: event.target.value }))
-                        }
-                        placeholder="https://facebook.com/..."
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Sitio web</span>
-                      <input
-                        type="url"
-                        value={commerceProfile.website_url}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, website_url: event.target.value }))
-                        }
-                        placeholder="https://..."
-                      />
-                    </label>
-
-                    <label className="form-field">
-                      <span>Horarios de atención</span>
-                      <input
-                        type="text"
-                        value={commerceProfile.business_hours}
-                        onChange={(event) =>
-                          setCommerceProfile((current) => ({ ...current, business_hours: event.target.value }))
-                        }
-                        placeholder="Lun a Vie 9 a 18 hs"
-                      />
-                    </label>
+                    <TextField
+                      className="form-field-full"
+                      label="Nombre del comercio"
+                      value={commerceProfile.business_name}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, business_name: event.target.value }))}
+                      placeholder="Ej: HardPoint Computación"
+                      inputProps={{ maxLength: 150 }}
+                      required
+                    />
+                    <TextField
+                      label="Dirección"
+                      value={commerceProfile.address}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, address: event.target.value }))}
+                      placeholder="Dirección del local"
+                      inputProps={{ maxLength: 200 }}
+                    />
+                    <TextField
+                      label="Teléfono"
+                      type="tel"
+                      value={commerceProfile.phone}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, phone: event.target.value }))}
+                      placeholder="+54 11 ..."
+                      inputProps={{ maxLength: 40 }}
+                    />
+                    <TextField
+                      label="Instagram"
+                      type="url"
+                      value={commerceProfile.instagram_url}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, instagram_url: event.target.value }))}
+                      placeholder="https://instagram.com/..."
+                    />
+                    <TextField
+                      label="Facebook"
+                      type="url"
+                      value={commerceProfile.facebook_url}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, facebook_url: event.target.value }))}
+                      placeholder="https://facebook.com/..."
+                    />
+                    <TextField
+                      label="Sitio web"
+                      type="url"
+                      value={commerceProfile.website_url}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, website_url: event.target.value }))}
+                      placeholder="https://..."
+                    />
+                    <TextField
+                      label="Horarios de atención"
+                      value={commerceProfile.business_hours}
+                      onChange={(event) => setCommerceProfile((current) => ({ ...current, business_hours: event.target.value }))}
+                      placeholder="Lun a Vie 9 a 18 hs"
+                    />
                   </div>
 
                   {profileFeedback ? (
-                    <p className={`form-feedback form-feedback-${profileFeedbackType}`}>
+                    <Alert severity={profileFeedbackType}>
                       {profileFeedback}
-                    </p>
+                    </Alert>
                   ) : null}
 
                   <div className="form-actions-bar">
-                    <button className="btn btn-primary" type="submit" disabled={profileSubmitting}>
+                    <Button variant="contained" type="submit" disabled={profileSubmitting}>
                       {profileSubmitting ? "Guardando..." : "Guardar información"}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
             ) : null}
-          </div>
+          </Paper>
         </div>
       ) : null}
-    </section>
+    </Box>
   );
 }

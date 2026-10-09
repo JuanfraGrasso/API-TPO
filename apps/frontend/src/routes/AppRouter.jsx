@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link as RouterLink, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { AppBar, Box, Button, Container, Divider, IconButton, Link, Menu, MenuItem, Stack, Toolbar, Typography } from "@mui/material";
+import { Menu as MenuIcon, UserRound } from "lucide-react";
 import HomePage from "../pages/HomePage";
 import CatalogPage from "../pages/CatalogPage";
 import ContactPage from "../pages/ContactPage";
@@ -11,29 +13,29 @@ function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getStoredAdminSession()));
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [menuKind, setMenuKind] = useState(null);
 
   useEffect(() => {
     setIsLoggedIn(Boolean(getStoredAdminSession()));
-    setIsProfileMenuOpen(false);
+    setMenuAnchor(null);
+    setMenuKind(null);
   }, [location.pathname]);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    }
+  function openMenu(event, kind) {
+    setMenuAnchor(event.currentTarget);
+    setMenuKind(kind);
+  }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  function closeMenu() {
+    setMenuAnchor(null);
+    setMenuKind(null);
+  }
 
   function handleLogout() {
     clearAdminSession();
     setIsLoggedIn(false);
-    setIsProfileMenuOpen(false);
+    closeMenu();
     navigate("/admin/login", { replace: true });
   }
 
@@ -63,152 +65,129 @@ function Layout({ children }) {
     }
   }
 
+  const navLinks = [
+    { label: "Inicio", to: "/" },
+    { label: "Catálogo", to: "/catalogo" },
+    { label: "Contacto", to: "/contacto" }
+  ];
+
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-inner">
-          <div className="topbar-left">
-            <Link className="brand-logo-link" to="/" aria-label="HardPoint Store">
-              <img
+    <Box className="app-shell">
+      <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: "divider", zIndex: 10 }}>
+        <Container maxWidth="xl">
+          <Toolbar disableGutters sx={{ minHeight: { xs: 64, sm: 72 }, gap: 2 }}>
+            <Box component={RouterLink} to="/" aria-label="HardPoint Store" className="brand-logo-link" sx={{ flexShrink: 0 }}>
+              <Box
+                component="img"
                 className="brand-logo"
                 src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png"
                 alt="HardPoint Store"
                 data-attempt="0"
                 onError={handleLogoError}
               />
-              <span className="brand-logo-fallback">HardPoint Store</span>
-            </Link>
+              <Typography component="span" className="brand-logo-fallback">HardPoint Store</Typography>
+            </Box>
 
-            <nav className="main-nav">
-              <Link to="/">Inicio</Link>
-              <Link to="/catalogo">Catalogo</Link>
-              <Link to="/contacto">Contacto</Link>
-            </nav>
-          </div>
+            <Stack component="nav" direction="row" spacing={0.5} sx={{ display: { xs: "none", md: "flex" }, flexGrow: 1 }}>
+              {navLinks.map((item) => (
+                <Button key={item.to} component={RouterLink} to={item.to} color="inherit">
+                  {item.label}
+                </Button>
+              ))}
+            </Stack>
 
-          {isLoggedIn ? (
-            <div className="profile-menu" ref={profileMenuRef}>
-              <button
-                type="button"
-                className="login-icon-btn"
-                aria-label="Cuenta de administrador"
-                aria-haspopup="true"
-                aria-expanded={isProfileMenuOpen}
-                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path
-                    d="M20 21a8 8 0 0 0-16 0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                  <circle
-                    cx="12"
-                    cy="8"
-                    r="3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  />
-                </svg>
-              </button>
+            <Box sx={{ flexGrow: 1, display: { xs: "block", md: "none" } }} />
 
-              {isProfileMenuOpen ? (
-                <div className="profile-menu-dropdown">
-                  <Link
-                    className="profile-menu-item"
-                    to="/admin"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                  >
-                    Panel
-                  </Link>
-                  <button type="button" className="profile-menu-item" onClick={handleLogout}>
-                    Cerrar sesión
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <Link className="login-icon-btn" to="/admin/login" aria-label="Ingresar al panel admin">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path
-                  d="M20 21a8 8 0 0 0-16 0"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="12"
-                  cy="8"
-                  r="3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                />
-              </svg>
-            </Link>
-          )}
-        </div>
-      </header>
-      <main className="container">{children}</main>
-      <footer className="site-footer">
-        <div className="site-footer-container">
-          <div className="site-footer-grid">
-            {/* COLUMNA 1: INFO DE MARCA */}
-            <div className="footer-col footer-col-brand">
-              <div className="footer-brand">
-                <img
+            <IconButton
+              aria-label="Abrir navegación"
+              aria-haspopup="true"
+              onClick={(event) => openMenu(event, "navigation")}
+              sx={{ display: { xs: "inline-flex", md: "none" } }}
+            >
+              <MenuIcon size={21} />
+            </IconButton>
+
+            <IconButton
+              component={!isLoggedIn ? RouterLink : "button"}
+              to={!isLoggedIn ? "/admin/login" : undefined}
+              aria-label={isLoggedIn ? "Cuenta de administrador" : "Ingresar al panel admin"}
+              aria-haspopup={isLoggedIn ? "true" : undefined}
+              onClick={isLoggedIn ? (event) => openMenu(event, "account") : undefined}
+              sx={{ border: 1, borderColor: "divider", width: 38, height: 38, color: "text.primary" }}
+            >
+              <UserRound size={18} />
+            </IconButton>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
+        {menuKind === "navigation" ? navLinks.map((item) => (
+          <MenuItem key={item.to} component={RouterLink} to={item.to} onClick={closeMenu}>
+            {item.label}
+          </MenuItem>
+        )) : null}
+        {menuKind === "account" ? (
+          <>
+            <MenuItem component={RouterLink} to="/admin" onClick={closeMenu}>Panel administrador</MenuItem>
+            <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+          </>
+        ) : null}
+      </Menu>
+
+      <Box component="main" className="container">{children}</Box>
+
+      <Box component="footer" className="site-footer">
+        <Container maxWidth="xl" className="site-footer-container">
+          <Box className="site-footer-grid" sx={{ gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))", lg: "1.5fr 1fr 1fr" } }}>
+            <Box className="footer-col footer-col-brand">
+              <Box className="footer-brand">
+                <Box
+                  component="img"
                   className="brand-logo footer-logo"
                   src="https://duthinsevssucwsgmfuz.supabase.co/storage/v1/object/public/public-images/hardpoint-logo.png"
                   alt="HardPoint Store"
                   onError={handleLogoError}
                 />
-                <span className="brand-logo-fallback footer-brand-fallback">HardPoint Store</span>
-              </div>
-              <p className="footer-description">
+                <Typography component="span" className="brand-logo-fallback footer-brand-fallback">HardPoint Store</Typography>
+              </Box>
+              <Typography className="footer-description">
                 Especialistas en hardware gamer, componentes de alto rendimiento y armado de computadoras a medida con garantía oficial.
-              </p>
-              <div className="footer-badges">
-                <span className="footer-badge">Garantía Oficial</span>
-                <span className="footer-badge">Envíos a todo el país</span>
-              </div>
-            </div>
+              </Typography>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" className="footer-badges">
+                <Typography component="span" className="footer-badge">Garantía Oficial</Typography>
+                <Typography component="span" className="footer-badge">Envíos a todo el país</Typography>
+              </Stack>
+            </Box>
 
-            {/* COLUMNA 2: NAVEGACION */}
-            <div className="footer-col">
-              <h4 className="footer-col-title">Navegación</h4>
-              <ul className="footer-links">
-                <li><Link to="/">Inicio</Link></li>
-                <li><Link to="/catalogo">Catálogo de Productos</Link></li>
-                <li><Link to="/contacto">Contacto y Asesoría</Link></li>
-                <li><Link to="/admin/login">Acceso Administrador</Link></li>
-              </ul>
-            </div>
+            <Box className="footer-col">
+              <Typography component="h2" className="footer-col-title">Navegación</Typography>
+              <Stack component="nav" className="footer-links" sx={{ "& .MuiLink-root": { color: "#a6adbf", textDecoration: "none", fontSize: "0.92rem", "&:hover": { color: "primary.main" } } }}>
+                <Link component={RouterLink} to="/">Inicio</Link>
+                <Link component={RouterLink} to="/catalogo">Catálogo de Productos</Link>
+                <Link component={RouterLink} to="/contacto">Contacto y Asesoría</Link>
+                <Link component={RouterLink} to="/admin/login">Acceso Administrador</Link>
+              </Stack>
+            </Box>
 
-            {/* COLUMNA 3: CATEGORIAS */}
-            <div className="footer-col">
-              <h4 className="footer-col-title">Categorías</h4>
-              <ul className="footer-links">
-                <li><Link to="/catalogo">Placas de Video</Link></li>
-                <li><Link to="/catalogo">Procesadores</Link></li>
-                <li><Link to="/catalogo">Memorias RAM</Link></li>
-                <li><Link to="/catalogo">Almacenamiento SSD</Link></li>
-                <li><Link to="/catalogo">Periféricos & Gabinetes</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* BARRA INFERIOR */}
-          <div className="site-footer-bottom">
-            <p>HardPoint Store © 2026. Todos los derechos reservados.</p>
-            <p className="footer-legal">Componentes, periféricos y tecnología de vanguardia.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+            <Box className="footer-col">
+              <Typography component="h2" className="footer-col-title">Categorías</Typography>
+              <Stack component="nav" className="footer-links" sx={{ "& .MuiLink-root": { color: "#a6adbf", textDecoration: "none", fontSize: "0.92rem", "&:hover": { color: "primary.main" } } }}>
+                <Link component={RouterLink} to="/catalogo">Placas de Video</Link>
+                <Link component={RouterLink} to="/catalogo">Procesadores</Link>
+                <Link component={RouterLink} to="/catalogo">Memorias RAM</Link>
+                <Link component={RouterLink} to="/catalogo">Almacenamiento SSD</Link>
+                <Link component={RouterLink} to="/catalogo">Periféricos & Gabinetes</Link>
+              </Stack>
+            </Box>
+          </Box>
+          <Stack className="site-footer-bottom" direction={{ xs: "column", sm: "row" }}>
+            <Typography>HardPoint Store © 2026. Todos los derechos reservados.</Typography>
+            <Typography className="footer-legal">Componentes, periféricos y tecnología de vanguardia.</Typography>
+          </Stack>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

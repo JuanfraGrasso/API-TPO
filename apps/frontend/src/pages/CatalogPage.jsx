@@ -1,4 +1,22 @@
 import { useEffect, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  InputAdornment,
+  IconButton,
+  MenuItem,
+  Paper,
+  Slider,
+  Stack,
+  TextField,
+  Typography
+} from "@mui/material";
+import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { getPublications } from "../services/api";
 
 export default function CatalogPage() {
@@ -124,17 +142,18 @@ export default function CatalogPage() {
     const isOpen = openFilterSections[section];
 
     return (
-      <button
+      <Button
         type="button"
         className="catalog-filter-heading"
+        variant="text"
+        fullWidth
         aria-expanded={isOpen}
         onClick={() => toggleFilterSection(section)}
+        endIcon={<ChevronDown className={`catalog-filter-chevron ${isOpen ? "open" : ""}`} size={18} aria-hidden="true" />}
+        sx={{ justifyContent: "space-between", textAlign: "left", minHeight: 34, py: 0.25 }}
       >
-        <span>{children}</span>
-        <span className={`catalog-filter-chevron ${isOpen ? "open" : ""}`} aria-hidden="true">
-          &gt;
-        </span>
-      </button>
+        {children}
+      </Button>
     );
   }
 
@@ -214,189 +233,204 @@ export default function CatalogPage() {
   });
 
   return (
-    <section className="catalog-page catalog-page-wide">
-      <div className="catalog-layout">
-        <aside className={`card catalog-sidebar ${isMobileFilterOpen ? "is-open" : "is-closed"}`}>
-          <div className="catalog-sidebar-head">
-            <h2 className="catalog-title">Catalogo</h2>
-            <button
+    <Box component="section" className="catalog-page catalog-page-wide">
+      <Box className="catalog-layout">
+        <Paper component="aside" elevation={0} className={`card catalog-sidebar ${isMobileFilterOpen ? "is-open" : "is-closed"}`}>
+          <Paper
+            className="catalog-sidebar-head"
+            elevation={0}
+            sx={{
+              bgcolor: "primary.main",
+              color: "background.paper",
+              p: 1.25,
+              width: "calc(100% + 2.6rem)",
+              ml: "-1.3rem",
+              mr: "-1.3rem",
+              mt: "-1.3rem",
+              mb: 0.25,
+              borderRadius: "8px 8px 0 0"
+            }}
+          >
+            <Typography component="h1" variant="h5" className="catalog-title" color="inherit" fontWeight={800}>
+              Catálogo
+            </Typography>
+            <Button
               type="button"
               className="catalog-mobile-toggle-btn"
+              variant="outlined"
+              size="small"
               onClick={() => setIsMobileFilterOpen((prev) => !prev)}
               aria-expanded={isMobileFilterOpen}
               aria-label={isMobileFilterOpen ? "Ocultar filtros" : "Mostrar filtros"}
+              endIcon={<ChevronDown className={`catalog-toggle-icon ${isMobileFilterOpen ? "open" : ""}`} size={18} />}
+              sx={{
+                display: "none",
+                whiteSpace: "nowrap",
+                color: "#111218",
+                borderColor: "rgba(17,18,24,.45)",
+                "@media (max-width: 600px)": { display: "inline-flex" }
+              }}
             >
               <span>{isMobileFilterOpen ? "Ocultar filtros" : "Filtros y Búsqueda"}</span>
-              <svg
-                className={`catalog-toggle-icon ${isMobileFilterOpen ? "open" : ""}`}
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          </div>
+            </Button>
+          </Paper>
 
-          <div className="catalog-sidebar-body">
+          <Stack className="catalog-sidebar-body" spacing={0.5}>
             <div className="catalog-search-group">
-              <label htmlFor="catalog-search">Buscar</label>
-              <input
+              <TextField
                 id="catalog-search"
+                label="Buscar publicaciones"
                 type="search"
                 placeholder="Ej: RTX 4060, Kingston, SSD..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
+                InputProps={{ startAdornment: <InputAdornment position="start"><Search size={18} /></InputAdornment> }}
               />
             </div>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="categories">Categorias</FilterSectionHeader>
               {openFilterSections.categories ? (
-                <div className="catalog-filters-list">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      type="button"
-                      className={category === activeCategory ? "filter-row active" : "filter-row"}
-                      onClick={() => setActiveCategory(category)}
-                    >
-                      <span>{category}</span>
-                      <span>{categoryCounts[category] || 0}</span>
-                    </button>
-                  ))}
-                </div>
+                <Stack spacing={0.5}>
+                  {categories.map((category) => {
+                    const selected = category === activeCategory;
+                    return (
+                      <Button
+                        key={category}
+                        variant={selected ? "contained" : "text"}
+                        color={selected ? "primary" : "inherit"}
+                        size="small"
+                        fullWidth
+                        onClick={() => setActiveCategory(category)}
+                        sx={{
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          color: selected ? "#fff" : "text.primary",
+                          backgroundColor: selected ? "primary.main" : "transparent",
+                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
+                        }}
+                      >
+                        <Box component="span">{category}</Box>
+                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
+                          {categoryCounts[category] || 0}
+                        </Typography>
+                      </Button>
+                    );
+                  })}
+                </Stack>
               ) : null}
             </div>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="brands">Marcas</FilterSectionHeader>
               {openFilterSections.brands ? (
-                <div className="catalog-filters-list">
-                  {brands.map((brand) => (
-                    <button
-                      key={brand}
-                      type="button"
-                      className={brand === activeBrand ? "filter-row active" : "filter-row"}
-                      onClick={() => setActiveBrand(brand)}
-                    >
-                      <span>{brand}</span>
-                      <span>{brandCounts[brand] || 0}</span>
-                    </button>
-                  ))}
-                </div>
+                <Stack spacing={0.5}>
+                  {brands.map((brand) => {
+                    const selected = brand === activeBrand;
+                    return (
+                      <Button
+                        key={brand}
+                        variant={selected ? "contained" : "text"}
+                        color={selected ? "primary" : "inherit"}
+                        size="small"
+                        fullWidth
+                        onClick={() => setActiveBrand(brand)}
+                        sx={{
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          color: selected ? "#fff" : "text.primary",
+                          backgroundColor: selected ? "primary.main" : "transparent",
+                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
+                        }}
+                      >
+                        <Box component="span">{brand}</Box>
+                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
+                          {brandCounts[brand] || 0}
+                        </Typography>
+                      </Button>
+                    );
+                  })}
+                </Stack>
               ) : null}
             </div>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="availability">Disponibilidad</FilterSectionHeader>
               {openFilterSections.availability ? (
-                <div className="catalog-filters-list">
-                  {availabilityOptions.map((status) => (
-                    <button
-                      key={status}
-                      type="button"
-                      className={status === activeAvailability ? "filter-row active" : "filter-row"}
-                      onClick={() => setActiveAvailability(status)}
-                    >
-                      <span>{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</span>
-                      <span>{availabilityCounts[status] || 0}</span>
-                    </button>
-                  ))}
-                </div>
+                <Stack spacing={0.5}>
+                  {availabilityOptions.map((status) => {
+                    const selected = status === activeAvailability;
+                    return (
+                      <Button
+                        key={status}
+                        variant={selected ? "contained" : "text"}
+                        color={selected ? "primary" : "inherit"}
+                        size="small"
+                        fullWidth
+                        onClick={() => setActiveAvailability(status)}
+                        sx={{
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          color: selected ? "#fff" : "text.primary",
+                          backgroundColor: selected ? "primary.main" : "transparent",
+                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
+                        }}
+                      >
+                        <Box component="span">{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</Box>
+                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
+                          {availabilityCounts[status] || 0}
+                        </Typography>
+                      </Button>
+                    );
+                  })}
+                </Stack>
               ) : null}
             </div>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="price">Precio máximo</FilterSectionHeader>
               {openFilterSections.price ? (
-                <div className="price-filter-wrap">
-                  <input
-                    type="range"
+                <Stack className="price-filter-wrap" spacing={1} sx={{ px: 1 }}>
+                  <Slider
                     min={minPrice}
                     max={maxPrice || 1}
-                    step="1000"
+                    step={1000}
                     value={maxPriceFilter ?? (maxPrice || 1)}
-                    onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
+                    onChange={(_, value) => setMaxPriceFilter(value)}
                     disabled={maxPrice === 0}
+                    aria-label="Precio máximo"
                   />
                   <div className="price-filter-values">
-                    <span>{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</span>
-                    <strong>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</strong>
+                    <Typography variant="caption" color="text.secondary">{maxPrice > 0 ? formatPrice(minPrice) : "Sin precios"}</Typography>
+                    <Typography variant="caption" fontWeight={700}>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</Typography>
                   </div>
-                </div>
+                </Stack>
               ) : null}
             </div>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="sort">Ordenar por</FilterSectionHeader>
               {openFilterSections.sort ? (
-                <div className="sort-options">
-                <label className="sort-option">
-                  <input
-                    type="radio"
-                    name="catalog-sort"
-                    value="featured"
-                    checked={sortBy === "featured"}
-                    onChange={() => setSortBy("featured")}
-                  />
-                  <span>Destacados</span>
-                </label>
-                <label className="sort-option">
-                  <input
-                    type="radio"
-                    name="catalog-sort"
-                    value="price-asc"
-                    checked={sortBy === "price-asc"}
-                    onChange={() => setSortBy("price-asc")}
-                  />
-                  <span>Menor precio</span>
-                </label>
-                <label className="sort-option">
-                  <input
-                    type="radio"
-                    name="catalog-sort"
-                    value="price-desc"
-                    checked={sortBy === "price-desc"}
-                    onChange={() => setSortBy("price-desc")}
-                  />
-                  <span>Mayor precio</span>
-                </label>
-                <label className="sort-option">
-                  <input
-                    type="radio"
-                    name="catalog-sort"
-                    value="name-asc"
-                    checked={sortBy === "name-asc"}
-                    onChange={() => setSortBy("name-asc")}
-                  />
-                  <span>Nombre A-Z</span>
-                </label>
-                <label className="sort-option">
-                  <input
-                    type="radio"
-                    name="catalog-sort"
-                    value="newest"
-                    checked={sortBy === "newest"}
-                    onChange={() => setSortBy("newest")}
-                  />
-                  <span>Mas recientes</span>
-                </label>
-                </div>
+                <TextField select label="Ordenar por" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                  <MenuItem value="featured">Destacados</MenuItem>
+                  <MenuItem value="price-asc">Menor precio</MenuItem>
+                  <MenuItem value="price-desc">Mayor precio</MenuItem>
+                  <MenuItem value="name-asc">Nombre A-Z</MenuItem>
+                  <MenuItem value="newest">Más recientes</MenuItem>
+                </TextField>
               ) : null}
             </div>
-          </div>
-        </aside>
+          </Stack>
+        </Paper>
 
-        <section className="catalog-results">
-
-          {isLoading ? <p>Cargando publicaciones...</p> : null}
-          {error ? <p className="error-message">{error}</p> : null}
+        <Box component="section" className="catalog-results">
+          {isLoading ? (
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ p: 2 }}>
+              <CircularProgress size={22} />
+              <Typography color="text.secondary">Cargando publicaciones...</Typography>
+            </Stack>
+          ) : null}
+          {error ? <Alert severity="error">{error}</Alert> : null}
 
           {!isLoading && !error ? (
             <div className="catalog-grid">
@@ -414,13 +448,19 @@ export default function CatalogPage() {
                     maximumFractionDigits: 0
                   }).format(publication.price)
                   : "Consultar precio";
-                const availabilityClass = `status-badge status-${publication.availability_status}`;
-
                 return (
-                    <article
+                    <Card
                       key={publication.id}
+                      component="article"
                       className="card publication-card"
+                      variant="outlined"
+                      elevation={0}
                       style={{ "--card-index": index }}
+                      sx={{
+                        display: "grid",
+                        minWidth: 0,
+                        gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(190px, 42%) minmax(0, 1fr)" }
+                      }}
                     >
                       <div className="publication-media">
                         {activeImage ? (
@@ -435,37 +475,41 @@ export default function CatalogPage() {
 
                         {images.length > 1 ? (
                           <>
-                            <button
+                            <IconButton
                               type="button"
                               className="carousel-arrow carousel-arrow-prev"
                               aria-label="Imagen anterior"
+                              size="small"
                               onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 goToPreviousImage(publication.id, images.length);
                               }}
                             >
-                              ‹
-                            </button>
-                            <button
+                              <ChevronLeft size={20} />
+                            </IconButton>
+                            <IconButton
                               type="button"
                               className="carousel-arrow carousel-arrow-next"
                               aria-label="Imagen siguiente"
+                              size="small"
                               onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 goToNextImage(publication.id, images.length);
                               }}
                             >
-                              ›
-                            </button>
+                              <ChevronRight size={20} />
+                            </IconButton>
                             <div className="carousel-dots">
                               {images.map((image, imageIndex) => (
-                                <button
+                                <IconButton
                                   key={image.id || imageIndex}
                                   type="button"
                                   className={`carousel-dot ${imageIndex === activeImageIndex ? "active" : ""}`}
                                   aria-label={`Ver imagen ${imageIndex + 1}`}
+                                  size="small"
+                                  sx={{ width: 8, height: 8, minWidth: 0, p: 0 }}
                                   onClick={(event) => {
                                     event.preventDefault();
                                     event.stopPropagation();
@@ -477,33 +521,39 @@ export default function CatalogPage() {
                           </>
                         ) : null}
                       </div>
-                      <div className="publication-body">
-                      <h3>{publication.name}</h3>
-                      <div className="publication-tags">
-                        {publication.brand ? <span>Marca: {publication.brand}</span> : null}
-                      </div>
-                      <p>{publication.description}</p>
-                      <div className="publication-meta">
-                        <strong>{priceLabel}</strong>
-                        <span className={availabilityClass}>{publication.availability_status}</span>
-                      </div>
-                    </div>
-                    </article>
+                      <CardContent className="publication-body" sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                        <Typography component="h2" variant="h6" fontWeight={750}>{publication.name}</Typography>
+                        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap className="publication-tags">
+                          {publication.brand ? <Chip size="small" label={`Marca: ${publication.brand}`} variant="outlined" /> : null}
+                          {publication.categories?.name ? <Chip size="small" label={publication.categories.name} /> : null}
+                        </Stack>
+                        <Typography component="p" color="text.secondary">{publication.description}</Typography>
+                        <Stack className="publication-meta" direction="row" alignItems="center" justifyContent="space-between" gap={1}>
+                          <Typography component="strong" fontWeight={800}>{priceLabel}</Typography>
+                          <Chip
+                            size="small"
+                            label={formatAvailabilityLabel(publication.availability_status)}
+                            color={publication.availability_status === "disponible" ? "success" : publication.availability_status === "sin_stock" ? "error" : "warning"}
+                            variant="outlined"
+                          />
+                        </Stack>
+                      </CardContent>
+                    </Card>
                 );
               })}
             </div>
           ) : null}
 
           {!isLoading && !error && visiblePublications.length === 0 ? (
-            <div className="card empty-state">
-              <h3>No encontramos resultados</h3>
-              <p>
+            <Paper className="card empty-state" variant="outlined">
+              <Typography component="h2" variant="h6" fontWeight={750}>No encontramos resultados</Typography>
+              <Typography color="text.secondary">
                 Proba limpiar la busqueda o cambiar la categoria para ver mas productos.
-              </p>
-            </div>
+              </Typography>
+            </Paper>
           ) : null}
-        </section>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Box>
   );
 }

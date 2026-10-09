@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Alert, Box, Button, Card, Chip, CircularProgress, Stack, TextField, Typography } from "@mui/material";
+import { Camera, Clock3, Mail, MapPin, Phone, Send, Share2 } from "lucide-react";
 import { createInquiry, getCommerceProfile } from "../services/api";
 
 const initialForm = {
@@ -121,121 +123,60 @@ export default function ContactPage() {
     }
   }
 
+  const contactChannels = [
+    { label: "Teléfono / WhatsApp", value: commerceProfile.phone || "No informado", className: "channel-phone", Icon: Phone },
+    { label: "Correo electrónico", value: "admin@hardpoint.com", className: "channel-email", Icon: Mail },
+    { label: "Instagram", value: getSocialLabel(commerceProfile.instagram_url, "No informado"), className: "channel-instagram", Icon: Camera },
+    { label: "Facebook", value: getSocialLabel(commerceProfile.facebook_url, "No informado"), className: "channel-facebook", Icon: Share2 },
+    { label: "Horarios de atención", value: commerceProfile.business_hours || "No informado", className: "channel-hours", Icon: Clock3 }
+  ];
+
   return (
-    <section className="contact-page">
-      {/* HEADER HERO */}
-      <div className="contact-hero-banner">
-        <span className="eyebrow">Contacto & Asesoramiento</span>
-        <h2>¿Tenés dudas sobre tu próximo setup?</h2>
-        <p>
+    <Box component="section" className="contact-page">
+      <Card className="contact-hero-banner" variant="outlined" elevation={0}>
+        <Chip label="Contacto y asesoramiento" color="primary" variant="outlined" sx={{ alignSelf: "flex-start" }} />
+        <Typography component="h1" variant="h4" fontWeight={800} sx={{ fontSize: { xs: "1.65rem", sm: "2.125rem" }, lineHeight: 1.2 }}>
+          ¿Tenés dudas sobre tu próximo setup?
+        </Typography>
+        <Typography color="text.secondary">
           Escribinos a través del formulario o comunicate por nuestros canales oficiales. Te asesoramos en compatibilidad, stock y presupuestos personalizados.
-        </p>
-      </div>
+        </Typography>
+      </Card>
 
-      <div className="contact-layout-grid">
-        {/* COLUMNA IZQUIERDA: CANALES Y UBICACION */}
-        <div className="contact-info-column">
-          {/* CANALES DE CONTACTO */}
-          <article className="card contact-channels-card">
-            <div className="contact-card-header">
-              <div className="contact-card-icon-title">
-                <div className="contact-icon-bubble">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 style={{ margin: 0 }}>Canales de atención</h3>
-                  <p className="contact-card-subtitle">Respuestas rápidas en horario comercial</p>
-                </div>
-              </div>
-            </div>
+      <Box className="contact-layout-grid">
+        <Stack className="contact-info-column">
+          <Card className="contact-channels-card" variant="outlined" elevation={0}>
+            <Stack className="contact-card-header" direction="row" spacing={1.5} alignItems="center">
+              <Box className="contact-icon-bubble"><Phone size={20} /></Box>
+              <Box>
+                <Typography component="h2" variant="h6" fontWeight={750}>Canales de atención</Typography>
+                <Typography className="contact-card-subtitle" color="text.secondary">Respuestas rápidas en horario comercial</Typography>
+              </Box>
+            </Stack>
+            <Stack className="contact-items-list">
+              {contactChannels.map(({ label, value, className, Icon }) => (
+                <Box className="contact-channel-item" key={label}>
+                  <Box className={`channel-icon-wrap ${className}`}><Icon size={18} /></Box>
+                  <Box className="channel-info">
+                    <Typography component="span" className="channel-label">{label}</Typography>
+                    <Typography component="span" className="channel-value">{value}</Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+          </Card>
 
-            <div className="contact-items-list">
-              <div className="contact-channel-item">
-                <div className="channel-icon-wrap channel-phone">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                </div>
-                <div className="channel-info">
-                  <span className="channel-label">Teléfono / WhatsApp</span>
-                  <span className="channel-value">{commerceProfile.phone || "No informado"}</span>
-                </div>
-              </div>
-
-              <div className="contact-channel-item">
-                <div className="channel-icon-wrap channel-email">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </div>
-                <div className="channel-info">
-                  <span className="channel-label">Correo Electrónico</span>
-                  <span className="channel-value">admin@hardpoint.com</span>
-                </div>
-              </div>
-
-              <div className="contact-channel-item">
-                <div className="channel-icon-wrap channel-instagram">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                  </svg>
-                </div>
-                <div className="channel-info">
-                  <span className="channel-label">Instagram</span>
-                  <span className="channel-value">{getSocialLabel(commerceProfile.instagram_url, "No informado")}</span>
-                </div>
-              </div>
-
-              <div className="contact-channel-item">
-                <div className="channel-icon-wrap channel-facebook">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                  </svg>
-                </div>
-                <div className="channel-info">
-                  <span className="channel-label">Facebook</span>
-                  <span className="channel-value">{getSocialLabel(commerceProfile.facebook_url, "No informado")}</span>
-                </div>
-              </div>
-
-              <div className="contact-channel-item">
-                <div className="channel-icon-wrap channel-hours">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                </div>
-                <div className="channel-info">
-                  <span className="channel-label">Horarios de atención</span>
-                  <span className="channel-value">{commerceProfile.business_hours || "No informado"}</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          {/* UBICACION Y MAPA */}
-          <article className="card contact-location-card">
-            <div className="contact-card-header">
-              <div className="contact-card-icon-title">
-                <div className="contact-icon-bubble">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 style={{ margin: 0 }}>Nuestra Ubicación</h3>
-                  <p className="contact-card-subtitle">{commerceProfile.address || "Dirección no informada"}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="map-container" style={{ marginTop: "0.8rem" }}>
+          <Card className="contact-location-card" variant="outlined" elevation={0}>
+            <Stack className="contact-card-header" direction="row" spacing={1.5} alignItems="center">
+              <Box className="contact-icon-bubble"><MapPin size={20} /></Box>
+              <Box>
+                <Typography component="h2" variant="h6" fontWeight={750}>Nuestra ubicación</Typography>
+                <Typography className="contact-card-subtitle" color="text.secondary">
+                  {commerceProfile.address || "Dirección no informada"}
+                </Typography>
+              </Box>
+            </Stack>
+            <Box className="map-container" sx={{ mt: 1.5 }}>
               <iframe
                 title="Ubicación Galerías Pacífico"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3284.015708892187!2d-58.37731762343888!3d-34.59934185750244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bccacc2b10a30b%3A0x6e7888b1f5e884ea!2sGaler%C3%ADas%20Pac%C3%ADfico!5e0!3m2!1ses-419!2sar!4v1710000000000!5m2!1ses-419!2sar"
@@ -246,54 +187,50 @@ export default function ContactPage() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-            </div>
-          </article>
-        </div>
+            </Box>
+          </Card>
+        </Stack>
 
-        {/* COLUMNA DERECHA: FORMULARIO DE CONSULTAS */}
-        <div className="contact-form-column">
-          <article className="card contact-form-card">
-            <div className="contact-form-header">
-              <h3 style={{ margin: "0.2rem 0 0.4rem" }}>Envianos tu consulta</h3>
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.92rem", margin: 0 }}>
+        <Box className="contact-form-column">
+          <Card className="contact-form-card" variant="outlined" elevation={0}>
+            <Box className="contact-form-header">
+              <Typography component="h2" variant="h5" fontWeight={800}>Envianos tu consulta</Typography>
+              <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
                 Completá los datos y un asesor técnico te responderá a la brevedad.
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
-            <form className="contact-form" onSubmit={handleSubmit} style={{ marginTop: "1.2rem" }}>
-              <div className="form-grid">
-                <label className={`form-field ${touched.fullName && errors.fullName ? "form-field-invalid" : ""}`}>
-                  <span>Nombre completo *</span>
-                  <input
+            <Box component="form" className="contact-form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+              <Box className="form-grid">
+                  <TextField
                     name="fullName"
+                    label="Nombre completo"
                     type="text"
                     value={form.fullName}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="Ej: Juan Pérez"
                     disabled={isSubmitting}
+                    error={Boolean(touched.fullName && errors.fullName)}
+                    helperText={touched.fullName ? errors.fullName : " "}
+                    required
                   />
-                  {touched.fullName && errors.fullName ? <small>{errors.fullName}</small> : null}
-                </label>
-
-                <label className={`form-field ${touched.email && errors.email ? "form-field-invalid" : ""}`}>
-                  <span>Email de contacto *</span>
-                  <input
+                  <TextField
                     name="email"
+                    label="Email de contacto"
                     type="email"
                     value={form.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="tu@email.com"
                     disabled={isSubmitting}
+                    error={Boolean(touched.email && errors.email)}
+                    helperText={touched.email ? errors.email : " "}
+                    required
                   />
-                  {touched.email && errors.email ? <small>{errors.email}</small> : null}
-                </label>
-
-                <label className="form-field">
-                  <span>Teléfono</span>
-                  <input
+                  <TextField
                     name="phone"
+                    label="Teléfono"
                     type="tel"
                     value={form.phone}
                     onChange={handleChange}
@@ -301,60 +238,50 @@ export default function ContactPage() {
                     placeholder="Ej: +54 11 1234-5678"
                     disabled={isSubmitting}
                   />
-                </label>
-
-                <label className={`form-field ${touched.subject && errors.subject ? "form-field-invalid" : ""}`}>
-                  <span>Asunto *</span>
-                  <input
+                  <TextField
                     name="subject"
+                    label="Asunto"
                     type="text"
                     value={form.subject}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder="Ej: Compatibilidad de fuente y GPU"
                     disabled={isSubmitting}
+                    error={Boolean(touched.subject && errors.subject)}
+                    helperText={touched.subject ? errors.subject : " "}
+                    required
                   />
-                  {touched.subject && errors.subject ? <small>{errors.subject}</small> : null}
-                </label>
-              </div>
+              </Box>
 
-              <label className={`form-field form-field-full ${touched.message && errors.message ? "form-field-invalid" : ""}`} style={{ marginTop: "0.8rem" }}>
-                <span>Mensaje o Consulta técnica *</span>
-                <textarea
+              <TextField
+                className="form-field-full"
                   name="message"
-                  rows="6"
+                label="Mensaje o consulta técnica"
+                multiline
+                minRows={6}
                   value={form.message}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   placeholder="Contanos qué componentes estás buscando, presupuesto aproximado o cualquier duda técnica..."
                   disabled={isSubmitting}
+                error={Boolean(touched.message && errors.message)}
+                helperText={touched.message && errors.message ? errors.message : "Mínimo sugerido: 20 caracteres."}
+                required
                 />
-                <div className="form-field-meta">
-                  {touched.message && errors.message ? <small>{errors.message}</small> : <small>Mínimo sugerido: 20 caracteres.</small>}
-                  <small>{form.message.trim().length} caracteres</small>
-                </div>
-              </label>
+              <Typography variant="caption" color="text.secondary" textAlign="right">
+                {form.message.trim().length} caracteres
+              </Typography>
 
-              {submitError ? <p className="form-feedback form-feedback-error">{submitError}</p> : null}
-              {submitSuccess ? <p className="form-feedback form-feedback-success">{submitSuccess}</p> : null}
+              {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+              {submitSuccess ? <Alert severity="success">{submitSuccess}</Alert> : null}
 
-              <button className="btn btn-primary btn-submit-contact" type="submit" disabled={isSubmitting || !isFormValid}>
-                {isSubmitting ? (
-                  "Enviando consulta..."
-                ) : (
-                  <>
-                    <span>Enviar consulta</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            </form>
-          </article>
-        </div>
-      </div>
-    </section>
+              <Button className="btn-submit-contact" variant="contained" type="submit" disabled={isSubmitting || !isFormValid} startIcon={isSubmitting ? <CircularProgress size={18} color="inherit" /> : <Send size={18} />}>
+                {isSubmitting ? "Enviando consulta..." : "Enviar consulta"}
+              </Button>
+            </Box>
+          </Card>
+        </Box>
+      </Box>
+    </Box>
   );
 }
