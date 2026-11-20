@@ -96,6 +96,15 @@ export default function CatalogPage() {
     }
   }, [maxPriceFilter, maxPrice]);
 
+  function clearFilters() {
+    setSearchTerm("");
+    setActiveCategory("Todas");
+    setActiveBrand("Todas");
+    setActiveAvailability("Todos");
+    setMaxPriceFilter(maxPrice);
+    setSortBy("featured");
+  }
+
   function formatAvailabilityLabel(value) {
     if (value === "sin_stock") {
       return "Sin stock";
@@ -287,6 +296,21 @@ export default function CatalogPage() {
                 InputProps={{ startAdornment: <InputAdornment position="start"><Search size={18} /></InputAdornment> }}
               />
             </div>
+
+            <Button
+              type="button"
+              variant="outlined"
+              fullWidth
+              size="small"
+              onClick={clearFilters}
+              sx={{
+                mt: 0.5,
+                mb: 1,
+                textTransform: "none"
+              }}
+            >
+              Limpiar filtros
+            </Button>
 
             <div className="catalog-filter-group">
               <FilterSectionHeader section="categories">Categorias</FilterSectionHeader>
