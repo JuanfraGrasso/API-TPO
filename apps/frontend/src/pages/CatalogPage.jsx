@@ -5,10 +5,12 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   InputAdornment,
   IconButton,
+  ListItemText,
   MenuItem,
   Paper,
   Slider,
@@ -19,22 +21,59 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { getPublications } from "../services/api";
 
+const sortOptions = [
+  { value: "featured", label: "Destacados" },
+  { value: "price-asc", label: "Menor precio" },
+  { value: "price-desc", label: "Mayor precio" },
+  { value: "name-asc", label: "Nombre A-Z" },
+  { value: "newest", label: "Más recientes" }
+];
+
+function MultiSelectFilter({ label, options, value, onChange, formatLabel = (option) => option }) {
+  return (
+    <TextField
+      select
+      fullWidth
+      size="small"
+      label={label}
+      value={value}
+      onChange={(event) => {
+        const selected = event.target.value;
+        onChange(typeof selected === "string" ? selected.split(",") : selected);
+      }}
+      slotProps={{
+        inputLabel: { shrink: true },
+        select: {
+          multiple: true,
+          displayEmpty: true,
+          renderValue: (selected) => {
+            if (!selected.length) return "Todas";
+            const extraCount = selected.length - 1;
+            return `${formatLabel(selected[0])}${extraCount ? ` (+${extraCount})` : ""}`;
+          }
+        }
+      }}
+    >
+      {options.map((option) => (
+        <MenuItem key={option} value={option}>
+          <Checkbox checked={value.includes(option)} tabIndex={-1} />
+          <ListItemText primary={formatLabel(option)} />
+        </MenuItem>
+      ))}
+    </TextField>
+  );
+}
+
 export default function CatalogPage() {
   const [publications, setPublications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Todas");
-  const [activeBrand, setActiveBrand] = useState("Todas");
-  const [activeAvailability, setActiveAvailability] = useState("Todos");
+  const [activeCategories, setActiveCategories] = useState([]);
+  const [activeBrands, setActiveBrands] = useState([]);
+  const [activeAvailability, setActiveAvailability] = useState([]);
   const [sortBy, setSortBy] = useState("featured");
   const [maxPriceFilter, setMaxPriceFilter] = useState(null);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [openFilterSections, setOpenFilterSections] = useState({
-    categories: true,
-    brands: false,
-    availability: false,
-    price: false,
-    sort: false
-  });
+  const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeImageIndexByPublication, setActiveImageIndexByPublication] = useState({});
@@ -68,20 +107,9 @@ export default function CatalogPage() {
     };
   }, []);
 
-  const categories = [
-    "Todas",
-    ...new Set(publications.map((publication) => publication.categories?.name).filter(Boolean))
-  ];
-
-  const brands = [
-    "Todas",
-    ...new Set(publications.map((publication) => publication.brand).filter(Boolean))
-  ];
-
-  const availabilityOptions = [
-    "Todos",
-    ...new Set(publications.map((publication) => publication.availability_status).filter(Boolean))
-  ];
+  const categories = [...new Set(publications.map((publication) => publication.categories?.name).filter(Boolean))];
+  const brands = [...new Set(publications.map((publication) => publication.brand).filter(Boolean))];
+  const availabilityOptions = [...new Set(publications.map((publication) => publication.availability_status).filter(Boolean))];
 
   const priceValues = publications
     .map((publication) => publication.price)
@@ -90,18 +118,12 @@ export default function CatalogPage() {
   const minPrice = priceValues.length ? Math.min(...priceValues) : 0;
   const maxPrice = priceValues.length ? Math.max(...priceValues) : 0;
 
-  useEffect(() => {
-    if (maxPriceFilter == null && maxPrice > 0) {
-      setMaxPriceFilter(maxPrice);
-    }
-  }, [maxPriceFilter, maxPrice]);
-
   function clearFilters() {
     setSearchTerm("");
-    setActiveCategory("Todas");
-    setActiveBrand("Todas");
-    setActiveAvailability("Todos");
-    setMaxPriceFilter(maxPrice);
+    setActiveCategories([]);
+    setActiveBrands([]);
+    setActiveAvailability([]);
+    setMaxPriceFilter(null);
     setSortBy("featured");
   }
 
@@ -118,13 +140,6 @@ export default function CatalogPage() {
       currency: "ARS",
       maximumFractionDigits: 0
     }).format(value);
-  }
-
-  function toggleFilterSection(section) {
-    setOpenFilterSections((current) => ({
-      ...current,
-      [section]: !current[section]
-    }));
   }
 
   function goToPreviousImage(publicationId, totalImages) {
@@ -147,64 +162,15 @@ export default function CatalogPage() {
     setActiveImageIndexByPublication((prev) => ({ ...prev, [publicationId]: index }));
   }
 
-  function FilterSectionHeader({ section, children }) {
-    const isOpen = openFilterSections[section];
-
-    return (
-      <Button
-        type="button"
-        className="catalog-filter-heading"
-        variant="text"
-        fullWidth
-        aria-expanded={isOpen}
-        onClick={() => toggleFilterSection(section)}
-        endIcon={<ChevronDown className={`catalog-filter-chevron ${isOpen ? "open" : ""}`} size={18} aria-hidden="true" />}
-        sx={{ justifyContent: "space-between", textAlign: "left", minHeight: 34, py: 0.25 }}
-      >
-        {children}
-      </Button>
-    );
-  }
-
-  const categoryCounts = publications.reduce(
-    (acc, publication) => {
-      const key = publication.categories?.name || "Sin categoria";
-      acc[key] = (acc[key] || 0) + 1;
-      acc.Todas += 1;
-      return acc;
-    },
-    { Todas: 0 }
-  );
-
-  const brandCounts = publications.reduce(
-    (acc, publication) => {
-      const key = publication.brand || "Sin marca";
-      acc[key] = (acc[key] || 0) + 1;
-      acc.Todas += 1;
-      return acc;
-    },
-    { Todas: 0 }
-  );
-
-  const availabilityCounts = publications.reduce(
-    (acc, publication) => {
-      const key = publication.availability_status || "sin_stock";
-      acc[key] = (acc[key] || 0) + 1;
-      acc.Todos += 1;
-      return acc;
-    },
-    { Todos: 0 }
-  );
-
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const filteredPublications = publications.filter((publication) => {
-    const matchesCategory = activeCategory === "Todas"
-      || publication.categories?.name === activeCategory;
-    const matchesBrand = activeBrand === "Todas"
-      || publication.brand === activeBrand;
-    const matchesAvailability = activeAvailability === "Todos"
-      || publication.availability_status === activeAvailability;
+    const matchesCategory = activeCategories.length === 0
+      || activeCategories.includes(publication.categories?.name);
+    const matchesBrand = activeBrands.length === 0
+      || activeBrands.includes(publication.brand);
+    const matchesAvailability = activeAvailability.length === 0
+      || activeAvailability.includes(publication.availability_status);
 
     const searchableText = `${publication.name} ${publication.brand || ""} ${publication.sku || ""}`
       .toLowerCase();
@@ -252,10 +218,10 @@ export default function CatalogPage() {
               bgcolor: "primary.main",
               color: "background.paper",
               p: 1.25,
-              width: "calc(100% + 2.6rem)",
-              ml: "-1.3rem",
-              mr: "-1.3rem",
-              mt: "-1.3rem",
+              width: { xs: "calc(100% + 2.2rem)", sm: "calc(100% + 2.6rem)" },
+              ml: { xs: "-1.1rem", sm: "-1.3rem" },
+              mr: { xs: "-1.1rem", sm: "-1.3rem" },
+              mt: { xs: "-0.9rem", sm: "-1.3rem" },
               mb: 0.25,
               borderRadius: "8px 8px 0 0"
             }}
@@ -297,6 +263,23 @@ export default function CatalogPage() {
               />
             </div>
 
+            {(normalizedSearch || activeCategories.length > 0 || activeBrands.length > 0 || activeAvailability.length > 0 || (maxPriceFilter != null && maxPriceFilter < maxPrice) || sortBy !== "featured") ? (
+              <Stack direction="row" useFlexGap gap={1} aria-label="Filtros seleccionados" sx={{ flexWrap: "wrap", minWidth: 0, "& .MuiChip-root": { maxWidth: "100%" } }}>
+                {normalizedSearch ? <Chip size="small" label={`Búsqueda: ${searchTerm.trim()}`} onDelete={() => setSearchTerm("")} /> : null}
+                {activeCategories.map((category) => (
+                  <Chip key={category} size="small" label={`Categoría: ${category}`} onDelete={() => setActiveCategories((current) => current.filter((item) => item !== category))} />
+                ))}
+                {activeBrands.map((brand) => (
+                  <Chip key={brand} size="small" label={`Marca: ${brand}`} onDelete={() => setActiveBrands((current) => current.filter((item) => item !== brand))} />
+                ))}
+                {activeAvailability.map((status) => (
+                  <Chip key={status} size="small" label={`Disponibilidad: ${formatAvailabilityLabel(status)}`} onDelete={() => setActiveAvailability((current) => current.filter((item) => item !== status))} />
+                ))}
+                {maxPriceFilter != null && maxPriceFilter < maxPrice ? <Chip size="small" label={`Hasta ${formatPrice(maxPriceFilter)}`} onDelete={() => setMaxPriceFilter(null)} /> : null}
+                {sortBy !== "featured" ? <Chip size="small" label={`Orden: ${sortOptions.find((option) => option.value === sortBy)?.label}`} onDelete={() => setSortBy("featured")} /> : null}
+              </Stack>
+            ) : null}
+
             <Button
               type="button"
               variant="outlined"
@@ -312,116 +295,42 @@ export default function CatalogPage() {
               Limpiar filtros
             </Button>
 
-            <div className="catalog-filter-group">
-              <FilterSectionHeader section="categories">Categorias</FilterSectionHeader>
-              {openFilterSections.categories ? (
-                <Stack spacing={0.5}>
-                  {categories.map((category) => {
-                    const selected = category === activeCategory;
-                    return (
-                      <Button
-                        key={category}
-                        variant={selected ? "contained" : "text"}
-                        color={selected ? "primary" : "inherit"}
-                        size="small"
-                        fullWidth
-                        onClick={() => setActiveCategory(category)}
-                        sx={{
-                          justifyContent: "space-between",
-                          textAlign: "left",
-                          color: selected ? "#fff" : "text.primary",
-                          backgroundColor: selected ? "primary.main" : "transparent",
-                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
-                        }}
-                      >
-                        <Box component="span">{category}</Box>
-                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
-                          {categoryCounts[category] || 0}
-                        </Typography>
-                      </Button>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-            </div>
+            <Typography component="h2" variant="subtitle1" fontWeight={800}>
+              Filtros
+            </Typography>
+
+            <Stack spacing={1.5} sx={{ pt: 1 }}>
+              <MultiSelectFilter label="Categorías" options={categories} value={activeCategories} onChange={setActiveCategories} />
+              <MultiSelectFilter label="Marcas" options={brands} value={activeBrands} onChange={setActiveBrands} />
+              <MultiSelectFilter label="Disponibilidad" options={availabilityOptions} value={activeAvailability} onChange={setActiveAvailability} formatLabel={formatAvailabilityLabel} />
+              <TextField select fullWidth size="small" label="Ordenar por" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                {sortOptions.map((option) => <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>)}
+              </TextField>
+            </Stack>
 
             <div className="catalog-filter-group">
-              <FilterSectionHeader section="brands">Marcas</FilterSectionHeader>
-              {openFilterSections.brands ? (
-                <Stack spacing={0.5}>
-                  {brands.map((brand) => {
-                    const selected = brand === activeBrand;
-                    return (
-                      <Button
-                        key={brand}
-                        variant={selected ? "contained" : "text"}
-                        color={selected ? "primary" : "inherit"}
-                        size="small"
-                        fullWidth
-                        onClick={() => setActiveBrand(brand)}
-                        sx={{
-                          justifyContent: "space-between",
-                          textAlign: "left",
-                          color: selected ? "#fff" : "text.primary",
-                          backgroundColor: selected ? "primary.main" : "transparent",
-                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
-                        }}
-                      >
-                        <Box component="span">{brand}</Box>
-                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
-                          {brandCounts[brand] || 0}
-                        </Typography>
-                      </Button>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-            </div>
-
-            <div className="catalog-filter-group">
-              <FilterSectionHeader section="availability">Disponibilidad</FilterSectionHeader>
-              {openFilterSections.availability ? (
-                <Stack spacing={0.5}>
-                  {availabilityOptions.map((status) => {
-                    const selected = status === activeAvailability;
-                    return (
-                      <Button
-                        key={status}
-                        variant={selected ? "contained" : "text"}
-                        color={selected ? "primary" : "inherit"}
-                        size="small"
-                        fullWidth
-                        onClick={() => setActiveAvailability(status)}
-                        sx={{
-                          justifyContent: "space-between",
-                          textAlign: "left",
-                          color: selected ? "#fff" : "text.primary",
-                          backgroundColor: selected ? "primary.main" : "transparent",
-                          "&:hover": { backgroundColor: selected ? "primary.dark" : "action.hover" }
-                        }}
-                      >
-                        <Box component="span">{status === "Todos" ? "Todos" : formatAvailabilityLabel(status)}</Box>
-                        <Typography component="span" variant="body2" fontWeight={700} color="inherit">
-                          {availabilityCounts[status] || 0}
-                        </Typography>
-                      </Button>
-                    );
-                  })}
-                </Stack>
-              ) : null}
-            </div>
-
-            <div className="catalog-filter-group">
-              <FilterSectionHeader section="price">Precio máximo</FilterSectionHeader>
-              {openFilterSections.price ? (
+              <Button
+                type="button"
+                className="catalog-filter-heading"
+                variant="text"
+                fullWidth
+                aria-expanded={isPriceFilterOpen}
+                onClick={() => setIsPriceFilterOpen((current) => !current)}
+                endIcon={<ChevronDown className={`catalog-filter-chevron ${isPriceFilterOpen ? "open" : ""}`} size={18} aria-hidden="true" />}
+                sx={{ justifyContent: "space-between", textAlign: "left", minHeight: 34, py: 0.25 }}
+              >
+                Precio máximo
+              </Button>
+              {isPriceFilterOpen ? (
                 <Stack className="price-filter-wrap" spacing={1} sx={{ px: 1 }}>
                   <Slider
                     min={minPrice}
                     max={maxPrice || 1}
-                    step={1000}
+                    step={1}
+                    shiftStep={1000}
                     value={maxPriceFilter ?? (maxPrice || 1)}
                     onChange={(_, value) => setMaxPriceFilter(value)}
-                    disabled={maxPrice === 0}
+                    disabled={maxPrice === 0 || minPrice === maxPrice}
                     aria-label="Precio máximo"
                   />
                   <div className="price-filter-values">
@@ -429,19 +338,6 @@ export default function CatalogPage() {
                     <Typography variant="caption" fontWeight={700}>{maxPrice > 0 ? formatPrice(maxPriceFilter ?? maxPrice) : "-"}</Typography>
                   </div>
                 </Stack>
-              ) : null}
-            </div>
-
-            <div className="catalog-filter-group">
-              <FilterSectionHeader section="sort">Ordenar por</FilterSectionHeader>
-              {openFilterSections.sort ? (
-                <TextField select label="Ordenar por" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                  <MenuItem value="featured">Destacados</MenuItem>
-                  <MenuItem value="price-asc">Menor precio</MenuItem>
-                  <MenuItem value="price-desc">Mayor precio</MenuItem>
-                  <MenuItem value="name-asc">Nombre A-Z</MenuItem>
-                  <MenuItem value="newest">Más recientes</MenuItem>
-                </TextField>
               ) : null}
             </div>
           </Stack>

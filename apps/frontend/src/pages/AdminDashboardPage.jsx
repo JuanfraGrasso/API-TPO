@@ -794,19 +794,20 @@ export default function AdminDashboardPage() {
               overflow: "auto",
               display: { xs: isSidebarOpen ? "flex" : "none", sm: "flex" },
               flexDirection: "column",
-              height: "100vh",
-              position: { xs: "fixed", sm: "relative" },
+              flexShrink: 0,
+              alignSelf: "flex-start",
+              maxHeight: { xs: "100vh", sm: "calc(100vh - 88px)" },
+              position: { xs: "fixed", sm: "sticky" },
               zIndex: { xs: 999, sm: "auto" },
               left: 0,
-              top: 0,
-              bottom: 0,
+              top: { xs: 0, sm: 88 },
               borderRadius: { xs: 0, sm: 2 }
             }}
           >
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2, p: 2 }}>
+            <Typography variant="h5" fontWeight={800} sx={{ p: 1.25, bgcolor: "primary.main", color: "background.paper" }}>
               Menú
             </Typography>
-            <List sx={{ p: 2, pt: 0, flex: 1 }}>
+            <List sx={{ p: 2, flex: 1 }}>
               {adminTabs.map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -854,7 +855,7 @@ export default function AdminDashboardPage() {
           )}
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <Box sx={{ display: { xs: "flex", sm: "none" }, alignItems: "center", gap: 1, mb: 2 }}>
               <IconButton
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 sx={{ display: { xs: "flex", sm: "none" } }}
@@ -864,26 +865,19 @@ export default function AdminDashboardPage() {
             </Box>
 
             <Paper className="admin-main-card" elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 2, p: { xs: 1.5, sm: 3 } }}>
-              <Paper
-                className="admin-dashboard-header"
-                elevation={0}
-                sx={{
-                  bgcolor: "primary.main",
-                  color: "background.paper",
-                  width: { xs: "calc(100% + 26px)", sm: "calc(100% + 50px)" },
-                  ml: { xs: "-13px", sm: "-25px" },
-                  mr: { xs: "-13px", sm: "-25px" },
-                  mt: { xs: "-13px", sm: "-25px" },
-                  mb: 2,
-                  borderRadius: "15px 15px 0 0",
-                  px: { xs: 1.5, sm: 2.5 },
-                  py: { xs: 1.5, sm: 2 }
-                }}
-              >
-                <Typography component="h1" variant="h4" color="inherit" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
-                  {adminTabs.find(t => t.key === activeTab)?.label}
-                </Typography>
-              </Paper>
+              <Box component="h1" sx={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                p: 0,
+                m: "-1px",
+                overflow: "hidden",
+                clip: "rect(0, 0, 0, 0)",
+                whiteSpace: "nowrap",
+                border: 0
+              }}>
+                {adminTabs.find((tab) => tab.key === activeTab)?.label}
+              </Box>
 
             {pubFeedback ? (
               <Alert severity={pubFeedbackType} sx={{ mb: 2 }}>{pubFeedback}</Alert>
@@ -1363,6 +1357,14 @@ export default function AdminDashboardPage() {
 
             {activeTab === "admins" ? (
               <div className="admin-tab-content admin-admins-tab">
+                <div className="admin-section-header">
+                  <Box>
+                    <Typography component="h2" variant="h5" fontWeight={800}>Administradores</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 0.35 }}>
+                      Administrá tu cuenta y las cuentas de los administradores.
+                    </Typography>
+                  </Box>
+                </div>
                 <Box className="admin-admins-grid">
                   <Paper className="admin-management-section" variant="outlined">
                     <Typography component="h2" variant="h6" fontWeight={750}>Perfil del administrador</Typography>
@@ -1371,7 +1373,7 @@ export default function AdminDashboardPage() {
                         Iniciaste sesión con el administrador local definido por variables de entorno. Para editar tus datos, usa una cuenta registrada en la base de datos.
                       </Alert>
                     ) : (
-                      <form className="admin-create-form" onSubmit={handleSaveAdminProfile}>
+                      <form className="admin-create-form admin-account-form" onSubmit={handleSaveAdminProfile}>
                         <div className="form-grid">
                           <TextField
                             label="Nombre"
@@ -1415,7 +1417,7 @@ export default function AdminDashboardPage() {
                         El administrador local no puede cambiar su contraseña desde el panel.
                       </Alert>
                     ) : (
-                      <form className="admin-create-form" onSubmit={handleChangePassword}>
+                      <form className="admin-create-form admin-account-form" onSubmit={handleChangePassword}>
                         <div className="form-grid">
                           <TextField
                             className="form-field-full"

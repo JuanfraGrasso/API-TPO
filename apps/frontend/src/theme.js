@@ -18,14 +18,14 @@ const theme = createTheme({
     text: { primary: "#111218", secondary: "#4f535f" }
   },
   typography: {
-    fontFamily: '"Manrope", "Inter", sans-serif',
+    fontFamily: '"Exo 2", sans-serif',
     button: { fontSize: "0.96rem", fontWeight: 700, textTransform: "none" },
-    h1: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800 },
-    h2: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800 },
-    h3: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800 },
-    h4: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 800 },
-    h5: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 750 },
-    h6: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 750 }
+    h1: { fontWeight: 800 },
+    h2: { fontWeight: 800 },
+    h3: { fontWeight: 800 },
+    h4: { fontWeight: 800 },
+    h5: { fontWeight: 750 },
+    h6: { fontWeight: 750 }
   },
   shape: { borderRadius: 8 },
   components: {
