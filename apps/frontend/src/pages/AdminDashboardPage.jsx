@@ -39,15 +39,27 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   MenuItem,
   Paper,
   Stack,
   Switch,
-  Tab,
-  Tabs,
   TextField,
   Typography
 } from "@mui/material";
+import { 
+  Package, 
+  Folder, 
+  MessageSquare, 
+  Users, 
+  Store, 
+  Menu, 
+  X 
+} from "lucide-react";
 const initialPubForm = {
   name: "",
   category_id: "",
@@ -80,6 +92,7 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(getStoredAdminProfile());
   const [activeTab, setActiveTab] = useState("publications");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [publications, setPublications] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -750,11 +763,11 @@ export default function AdminDashboardPage() {
   }
 
   const adminTabs = [
-    { key: "publications", label: "Productos" },
-    { key: "categories", label: "Categorías" },
-    { key: "inquiries", label: "Consultas" },
-    { key: "admins", label: "Administradores" },
-    { key: "commerce", label: "Comercio" }
+    { key: "publications", label: "Productos", icon: Package },
+    { key: "categories", label: "Categorías", icon: Folder },
+    { key: "inquiries", label: "Consultas", icon: MessageSquare },
+    { key: "admins", label: "Administradores", icon: Users },
+    { key: "commerce", label: "Comercio", icon: Store }
   ];
 
   return (
@@ -768,63 +781,109 @@ export default function AdminDashboardPage() {
       {error ? <Alert severity="error" variant="outlined" sx={{ mb: 2 }}>{error}</Alert> : null}
 
       {!loading ? (
-        <div className="admin-dashboard-layout">
-          <Paper className="admin-main-card" elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 2, p: { xs: 1.5, sm: 3 } }}>
-            <Paper
-              className="admin-dashboard-header"
-              elevation={0}
-              sx={{
-                bgcolor: "primary.main",
-                color: "background.paper",
-                width: { xs: "calc(100% + 26px)", sm: "calc(100% + 50px)" },
-                ml: { xs: "-13px", sm: "-25px" },
-                mr: { xs: "-13px", sm: "-25px" },
-                mt: { xs: "-13px", sm: "-25px" },
-                mb: 0,
-                borderRadius: "15px 15px 0 0",
-                px: { xs: 1.5, sm: 2.5 },
-                py: { xs: 1.5, sm: 2 }
-              }}
-            >
-              <Typography component="h1" variant="h4" color="inherit" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
-                Panel administrador
-              </Typography>
-            </Paper>
+        <Box sx={{ display: "flex", gap: 2, minHeight: "100vh" }}>
+          <Paper
+            elevation={0}
+            sx={{
+              width: { xs: isSidebarOpen ? "250px" : "0", sm: "250px" },
+              bgcolor: "background.paper",
+              borderRight: "1px solid",
+              borderColor: "divider",
+              p: 2,
+              transition: "width 0.3s ease",
+              overflow: "hidden",
+              display: { xs: isSidebarOpen ? "flex" : "none", sm: "flex" },
+              flexDirection: "column",
+              height: "fit-content",
+              position: { xs: "fixed", sm: "relative" },
+              zIndex: { xs: 999, sm: "auto" },
+              left: 0,
+              top: 0,
+              bottom: 0,
+              borderRadius: { xs: 0, sm: 2 }
+            }}
+          >
+            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
+              Menú
+            </Typography>
+            <List sx={{ p: 0 }}>
+              {adminTabs.map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeTab === tab.key;
+                return (
+                  <ListItem key={tab.key} disablePadding sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      selected={isActive}
+                      onClick={() => {
+                        setActiveTab(tab.key);
+                        if (window.innerWidth < 600) {
+                          setIsSidebarOpen(false);
+                        }
+                      }}
+                      sx={{
+                        borderRadius: 1,
+                        bgcolor: isActive ? "primary.main" : "transparent",
+                        color: isActive ? "primary.contrastText" : "inherit",
+                        "&:hover": {
+                          bgcolor: isActive ? "primary.dark" : "action.hover"
+                        }
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 40, color: "inherit" }}>
+                        <TabIcon size={20} />
+                      </ListItemIcon>
+                      <ListItemText primary={tab.label} />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Paper>
 
-            <Tabs
-              className="admin-tabs"
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="scrollable"
-              scrollButtons="auto"
-              aria-label="Secciones del panel administrador"
+          {isSidebarOpen && (
+            <Box
               sx={{
-                display: { xs: "none", sm: "flex" },
-                mt: 1.25,
-                mb: 3,
-                borderBottom: "1px solid var(--border-subtle)",
-                "& .MuiTab-root": {
-                  fontSize: "0.94rem"
-                },
-                "& .MuiTabs-indicator": { height: 3, borderRadius: "3px 3px 0 0" }
+                display: { xs: "block", sm: "none" },
+                position: "fixed",
+                inset: 0,
+                bgcolor: "rgba(0,0,0,0.5)",
+                zIndex: 998
               }}
-            >
-              {adminTabs.map((tab) => (
-                <Tab key={tab.key} value={tab.key} label={tab.label} />
-              ))}
-            </Tabs>
-            <Box sx={{ display: { xs: "block", sm: "none" }, mt: 1.25, mb: 2.5 }}>
-              <TextField
-                select
-                label="Sección del panel"
-                value={activeTab}
-                onChange={(event) => setActiveTab(event.target.value)}
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <IconButton
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                sx={{ display: { xs: "flex", sm: "none" } }}
               >
-                {adminTabs.map((tab) => (
-                  <MenuItem key={tab.key} value={tab.key}>{tab.label}</MenuItem>
-                ))}
-              </TextField>
+                {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+              </IconButton>
             </Box>
+
+            <Paper className="admin-main-card" elevation={0} sx={{ border: 1, borderColor: "divider", borderRadius: 2, p: { xs: 1.5, sm: 3 } }}>
+              <Paper
+                className="admin-dashboard-header"
+                elevation={0}
+                sx={{
+                  bgcolor: "primary.main",
+                  color: "background.paper",
+                  width: { xs: "calc(100% + 26px)", sm: "calc(100% + 50px)" },
+                  ml: { xs: "-13px", sm: "-25px" },
+                  mr: { xs: "-13px", sm: "-25px" },
+                  mt: { xs: "-13px", sm: "-25px" },
+                  mb: 2,
+                  borderRadius: "15px 15px 0 0",
+                  px: { xs: 1.5, sm: 2.5 },
+                  py: { xs: 1.5, sm: 2 }
+                }}
+              >
+                <Typography component="h1" variant="h4" color="inherit" sx={{ fontSize: { xs: "1.5rem", sm: "1.85rem" } }}>
+                  {adminTabs.find(t => t.key === activeTab)?.label}
+                </Typography>
+              </Paper>
 
             {pubFeedback ? (
               <Alert severity={pubFeedbackType} sx={{ mb: 2 }}>{pubFeedback}</Alert>
@@ -1571,9 +1630,10 @@ export default function AdminDashboardPage() {
                 </form>
               </div>
             ) : null}
-          </Paper>
-        </div>
-      ) : null}
+            </Paper>
+            </Box>
+          </Box>
+        ) : null}
     </Box>
   );
 }
