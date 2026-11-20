@@ -789,12 +789,12 @@ export default function AdminDashboardPage() {
               bgcolor: "background.paper",
               borderRight: "1px solid",
               borderColor: "divider",
-              p: 2,
+              p: 0,
               transition: "width 0.3s ease",
-              overflow: "hidden",
+              overflow: "auto",
               display: { xs: isSidebarOpen ? "flex" : "none", sm: "flex" },
               flexDirection: "column",
-              height: "fit-content",
+              height: "100vh",
               position: { xs: "fixed", sm: "relative" },
               zIndex: { xs: 999, sm: "auto" },
               left: 0,
@@ -803,17 +803,16 @@ export default function AdminDashboardPage() {
               borderRadius: { xs: 0, sm: 2 }
             }}
           >
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
+            <Typography variant="h6" fontWeight={800} sx={{ mb: 2, p: 2 }}>
               Menú
             </Typography>
-            <List sx={{ p: 0 }}>
+            <List sx={{ p: 2, pt: 0, flex: 1 }}>
               {adminTabs.map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = activeTab === tab.key;
                 return (
                   <ListItem key={tab.key} disablePadding sx={{ mb: 0.5 }}>
                     <ListItemButton
-                      selected={isActive}
                       onClick={() => {
                         setActiveTab(tab.key);
                         if (window.innerWidth < 600) {
@@ -824,6 +823,7 @@ export default function AdminDashboardPage() {
                         borderRadius: 1,
                         bgcolor: isActive ? "primary.main" : "transparent",
                         color: isActive ? "primary.contrastText" : "inherit",
+                        fontWeight: isActive ? 600 : 400,
                         "&:hover": {
                           bgcolor: isActive ? "primary.dark" : "action.hover"
                         }
