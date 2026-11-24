@@ -269,6 +269,25 @@ export async function getAdminInquiries(token) {
   return readApiResponse(response, "No se pudieron obtener las consultas");
 }
 
+export async function getInquiryComments(id, token) {
+  const response = await fetch(`${API_URL}/inquiries/${id}/comments`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return readApiResponse(response, "No se pudieron obtener los comentarios");
+}
+
+export async function createInquiryComment(id, message, token) {
+  const response = await fetch(`${API_URL}/inquiries/${id}/comments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ message })
+  });
+  return readApiResponse(response, "No se pudo guardar el comentario");
+}
+
 export async function updateInquiryStatus(id, status, token) {
   const response = await fetch(`${API_URL}/inquiries/${id}`, {
     method: "PATCH",

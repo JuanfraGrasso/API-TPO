@@ -4,6 +4,7 @@ import {
   changeAdminPassword,
   clearAdminSession,
   createCategory,
+  createInquiryComment,
   createPublication,
   deleteCategory,
   deleteInquiry,
@@ -14,6 +15,7 @@ import {
   getAdmins,
   getCategories,
   getCommerceProfile,
+  getInquiryComments,
   getStoredAdminProfile,
   getStoredAdminSession,
   registerAdmin,
@@ -88,6 +90,119 @@ function formatAvailabilityLabel(value) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function InquiryComments({ inquiryId }) {
+  const [open, setOpen] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function loadComments() {
+    const token = getStoredAdminSession();
+    if (!token) {
+      setError("La sesión de administrador no está disponible.");
+      return;
+    }
+
+    setLoading(true);
+    setLoaded(false);
+    setError("");
+    try {
+      const response = await getInquiryComments(inquiryId, token);
+      setComments(response.data);
+      setLoaded(true);
+    } catch (err) {
+      setError(err.message || "No se pudieron cargar los comentarios.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleToggle() {
+    if (!open) loadComments();
+    setOpen(!open);
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const token = getStoredAdminSession();
+    if (!token) {
+      setError("La sesión de administrador no está disponible.");
+      return;
+    }
+    if (!message.trim() || [...message.trim()].length > 2000) {
+      setError("El comentario debe tener entre 1 y 2000 caracteres.");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      const response = await createInquiryComment(inquiryId, message, token);
+      setComments((previous) => [...previous, response.data]);
+      setMessage("");
+    } catch (err) {
+      setError(err.message || "No se pudo guardar el comentario.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="inquiry-comments">
+      <Button size="small" onClick={handleToggle} aria-expanded={open} disabled={loading || saving}>
+        {open ? "Ocultar seguimiento" : "Ver seguimiento"}
+      </Button>
+      {open ? (
+        <Stack spacing={1.5} sx={{ mt: 1 }}>
+          <Typography fontWeight={700}>Comentarios internos</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Registrá las acciones tomadas. Estos comentarios no se envían al cliente.
+          </Typography>
+          {error ? <Alert severity="error">{error}</Alert> : null}
+          {loading ? <Typography variant="body2">Cargando comentarios...</Typography> : !loaded ? (
+            <Button size="small" onClick={loadComments}>Reintentar</Button>
+          ) : (
+            <>
+              {comments.length === 0 && !error ? (
+                <Typography variant="body2" color="text.secondary">Todavía no hay comentarios.</Typography>
+              ) : null}
+              {comments.map((comment) => (
+                <Paper key={comment.id} variant="outlined" className="inquiry-comment">
+                  <Typography variant="body2" fontWeight={700}>
+                    {comment.author_name} · {new Date(comment.created_at).toLocaleString("es-AR")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                    {comment.message}
+                  </Typography>
+                </Paper>
+              ))}
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={1}>
+                  <TextField
+                    label="Agregar comentario"
+                    multiline
+                    minRows={2}
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    disabled={saving}
+                    fullWidth
+                  />
+                  <Button type="submit" variant="contained" size="small" disabled={saving || !message.trim()}>
+                    {saving ? "Guardando..." : "Guardar comentario"}
+                  </Button>
+                </Stack>
+              </form>
+            </>
+          )}
+        </Stack>
+      ) : null}
+    </div>
+  );
+}
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(getStoredAdminProfile());
@@ -126,6 +241,8 @@ export default function AdminDashboardPage() {
 
   const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
   const [inquiryFeedback, setInquiryFeedback] = useState("");
+  const [inquiryFeedbackType, setInquiryFeedbackType] = useState("info");
+  const [inquiriesLoadFailed, setInquiriesLoadFailed] = useState(false);
 
   const [createLoading, setCreateLoading] = useState(false);
   const [createFeedback, setCreateFeedback] = useState("");
@@ -192,6 +309,10 @@ export default function AdminDashboardPage() {
 
         if (inquiryRes.status === "fulfilled") {
           setInquiries(inquiryRes.value.data || []);
+        } else {
+          setInquiriesLoadFailed(true);
+          setInquiryFeedbackType("error");
+          setInquiryFeedback(inquiryRes.reason?.message || "No se pudieron cargar las consultas.");
         }
         if (pubRes.status === "fulfilled") {
           setPublications(pubRes.value.data || []);
@@ -381,13 +502,15 @@ export default function AdminDashboardPage() {
 
   async function handleDeleteInquiry(id) {
     const token = getStoredAdminSession();
-    if (!token || !window.confirm("¿Seguro que deseas eliminar esta consulta?")) return;
+    if (!token || !window.confirm("¿Seguro que deseas eliminar esta consulta y sus comentarios?")) return;
 
     try {
       await deleteInquiry(id, token);
       setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== id));
+      setInquiryFeedbackType("success");
       setInquiryFeedback("Consulta eliminada correctamente.");
     } catch (err) {
+      setInquiryFeedbackType("error");
       setInquiryFeedback(err.message || "No se pudo eliminar la consulta.");
     }
   }
@@ -565,8 +688,10 @@ export default function AdminDashboardPage() {
       setInquiries((prev) =>
         prev.map((inq) => (inq.id === id ? { ...inq, status: response.data.status } : inq))
       );
+      setInquiryFeedbackType("success");
       setInquiryFeedback("Estado de la consulta actualizado.");
     } catch (err) {
+      setInquiryFeedbackType("error");
       setInquiryFeedback(err.message || "No se pudo cambiar el estado.");
     } finally {
       setUpdatingInquiryId(null);
@@ -1302,13 +1427,13 @@ export default function AdminDashboardPage() {
                   <Box>
                     <Typography component="h2" variant="h5" fontWeight={800}>Consultas recibidas</Typography>
                     <Typography color="text.secondary" sx={{ mt: 0.35 }}>
-                      Revisá los mensajes de clientes y actualizá su estado de seguimiento.
+                      Revisá los mensajes de clientes y registrá el seguimiento de cada consulta.
                     </Typography>
                   </Box>
                   <Chip label={`${inquiries.length} en total`} variant="outlined" />
                 </div>
-                {inquiryFeedback ? <Alert severity="success" sx={{ mb: 2 }}>{inquiryFeedback}</Alert> : null}
-                {inquiries.length === 0 ? <Alert severity="info">No hay consultas registradas.</Alert> : null}
+                {inquiryFeedback ? <Alert severity={inquiryFeedbackType} sx={{ mb: 2 }}>{inquiryFeedback}</Alert> : null}
+                {!inquiriesLoadFailed && inquiries.length === 0 ? <Alert severity="info">No hay consultas registradas.</Alert> : null}
 
                 <div className="inquiries-grid">
                   {inquiries.map((inquiry) => (
@@ -1340,6 +1465,7 @@ export default function AdminDashboardPage() {
                       <div className="admin-inquiry-body">
                         <Typography><strong>Asunto:</strong> {inquiry.subject}</Typography>
                         <Typography color="text.secondary">{inquiry.message}</Typography>
+                        <InquiryComments inquiryId={inquiry.id} />
                         <Button
                           size="small"
                           variant="outlined"

@@ -1118,6 +1118,15 @@ article.showcase-card-gray {
   margin-top: 0.35rem;
 }
 
+.inquiry-comments {
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 0.65rem;
+}
+
+.inquiry-comment {
+  padding: 0.75rem;
+}
+
 @media (max-width: 900px) {
   .admin-dashboard-layout {
     grid-template-columns: 1fr;

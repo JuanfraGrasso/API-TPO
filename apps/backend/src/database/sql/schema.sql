@@ -103,10 +103,22 @@ create table if not exists inquiries (
 	updated_at timestamptz not null default now()
 );
 
+create table if not exists inquiry_comments (
+	id bigserial primary key,
+	inquiry_id bigint not null references inquiries(id) on delete cascade,
+	author_id text not null,
+	author_name text not null,
+	message text not null check (char_length(btrim(message)) between 1 and 2000),
+	created_at timestamptz not null default now()
+);
+
+alter table inquiry_comments enable row level security;
+
 create index if not exists idx_publications_category_id on publications(category_id);
 create index if not exists idx_publications_is_active on publications(is_active);
 create index if not exists idx_publications_name on publications(name);
 create index if not exists idx_inquiries_status on inquiries(status);
+create index if not exists idx_inquiry_comments_inquiry_id on inquiry_comments(inquiry_id, created_at);
 
 drop trigger if exists trg_admin_users_updated_at on admin_users;
 create trigger trg_admin_users_updated_at
